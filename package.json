@@ -8,6 +8,7 @@
     "dev": "tsup --watch --ignore-watch dist"
   },
   "devDependencies": {
+    "@types/node": "^24.9.2",
     "tsup": "^8.2.4"
   }
 }

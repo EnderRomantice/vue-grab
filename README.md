@@ -17,6 +17,8 @@ I came across the React Grab project on Twitter. It was fun and useful, and I fe
 
 ## Quick start
 
+> you can find index.global.js in the "/dist" directory.
+
 ```html
 <script src="./dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
 ```

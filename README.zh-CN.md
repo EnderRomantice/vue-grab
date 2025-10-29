@@ -19,6 +19,8 @@
 
 ## 快速试用
 
+> 你可以在 “/dist” 目录下找到index.golobal.js
+
 ```html
 <script src="./dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
 ```
