@@ -1,12 +1,12 @@
 # Vue Grab
 
-> Language: English | 中文
-> 
-> English: this file. 中文: see `README.zh-CN.md`.
+> Language: English | [中文](README.zh-CN.md)
 
 ## How did this project start?
 
 I came across the React Grab project on Twitter. It was fun and useful, and I felt Vue needed the same thing — so I created this repo.
+
+[React Grab](https://github.com/aidenybai/react-grab)
 
 ## What it does now
 
