@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue Grab Demo</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 20px; }
+      .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin: 12px 0; }
+      .btn { padding: 6px 10px; border: 1px solid #aaa; border-radius: 6px; background: #f8f8f8; cursor: pointer; }
+      .list { display: grid; gap: 8px; }
+    </style>
+    <!-- Load built vue-grab global script from repo root dist -->
+    <script src="../dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  </head>
+  <body>
+    <h1>Vue Grab Demo</h1>
+    <p>按住 <b>⌘C</b>（mac）或 <b>Ctrl+C</b>（Win/Linux）并点击元素，复制上下文到剪贴板。</p>
+
+    <div id="app"></div>
+
+    <script>
+      const { createApp, defineComponent } = Vue;
+
+      const TodoItem = defineComponent({
+        name: 'TodoItem',
+        props: { todo: Object },
+        template: `
+          <div class="card">
+            <div class="title">{{ todo.text }}</div>
+            <div>
+              <button class="btn" @click="$emit('toggle')">{{ todo.completed ? '完成 ✅' : '未完成 ⏳' }}</button>
+            </div>
+          </div>
+        `,
+      });
+
+      const TodoList = defineComponent({
+        name: 'TodoList',
+        components: { TodoItem },
+        data() {
+          return {
+            todos: [
+              { id: 1, text: '编写文档', completed: true },
+              { id: 2, text: '实现 vue-grab MVP', completed: false },
+              { id: 3, text: '测试与发布', completed: false },
+            ],
+          };
+        },
+        methods: {
+          toggle(i) { this.todos[i].completed = !this.todos[i].completed; },
+          add() { this.todos.push({ id: Date.now(), text: '新任务', completed: false }); },
+        },
+        template: `
+          <div>
+            <div class="list">
+              <TodoItem v-for="(todo,i) in todos" :key="todo.id" :todo="todo" @toggle="toggle(i)" />
+            </div>
+            <button class="btn" @click="add">新增</button>
+          </div>
+        `,
+      });
+
+      const App = defineComponent({
+        name: 'App',
+        components: { TodoList },
+        template: `
+          <div>
+            <div class="card">
+              <h2>待办事项</h2>
+              <TodoList />
+            </div>
+            <div class="card">
+              <h2>其他内容</h2>
+              <p class="desc">这是一些文本与按钮，便于测试抓取效果。</p>
+              <button class="btn">点击无效果（用于选择）</button>
+            </div>
+          </div>
+        `,
+      });
+
+      createApp(App).mount('#app');
+    </script>
+  </body>
+  </html>

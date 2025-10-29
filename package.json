@@ -1,0 +1,13 @@
+{
+  "name": "vue-grab",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch --ignore-watch dist"
+  },
+  "devDependencies": {
+    "tsup": "^8.2.4"
+  }
+}
