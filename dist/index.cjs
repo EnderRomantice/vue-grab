@@ -1,9 +1,10 @@
 'use strict';
 
-// src/utils/copy-text.ts
+// src/modules/clipboard.ts
 var copyTextToClipboard = async (text) => {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(text);
+  const anyNav = navigator;
+  if (anyNav?.clipboard?.writeText) {
+    await anyNav.clipboard.writeText(text);
     return;
   }
   const textarea = document.createElement("textarea");
@@ -20,17 +21,13 @@ var copyTextToClipboard = async (text) => {
   }
 };
 
-// src/utils/mount-root.ts
+// src/modules/overlay.ts
 var ATTRIBUTE_NAME = "data-vue-grab";
 var mountRoot = () => {
   const mountedHost = document.querySelector(`[${ATTRIBUTE_NAME}]`);
   if (mountedHost) {
-    const mountedRoot = mountedHost.shadowRoot?.querySelector(
-      `[${ATTRIBUTE_NAME}]`
-    );
-    if (mountedRoot instanceof HTMLDivElement && mountedHost.shadowRoot) {
-      return mountedRoot;
-    }
+    const mountedRoot = mountedHost.shadowRoot?.querySelector(`[${ATTRIBUTE_NAME}]`);
+    if (mountedRoot instanceof HTMLDivElement && mountedHost.shadowRoot) return mountedRoot;
   }
   const host = document.createElement("div");
   host.setAttribute(ATTRIBUTE_NAME, "true");
@@ -42,12 +39,9 @@ var mountRoot = () => {
   const root = document.createElement("div");
   root.setAttribute(ATTRIBUTE_NAME, "true");
   shadowRoot.appendChild(root);
-  const doc = document.body ?? document.documentElement;
-  doc.appendChild(host);
+  (document.body ?? document.documentElement).appendChild(host);
   return root;
 };
-
-// src/overlay.ts
 var ensureOverlay = () => {
   const root = mountRoot();
   let box = root.querySelector(".vg-box");
@@ -83,13 +77,12 @@ var ensureOverlay = () => {
 };
 var hideOverlay = () => {
   const root = mountRoot();
-  const box = root.querySelector(".vg-box");
-  const label = root.querySelector(".vg-label");
-  if (box) box.remove();
-  if (label) label.remove();
+  root.querySelector(".vg-box")?.remove();
+  root.querySelector(".vg-label")?.remove();
 };
 var renderOverlay = (rect, text) => {
   const { box, label } = ensureOverlay();
+  if (!box || !label) return;
   box.style.left = `${rect.x}px`;
   box.style.top = `${rect.y}px`;
   box.style.width = `${rect.width}px`;
@@ -100,15 +93,141 @@ var renderOverlay = (rect, text) => {
   label.style.top = `${labelY}px`;
   label.textContent = text ?? "VueGrab";
 };
+var showToast = (messageHTML, duration = 1600) => {
+  const root = mountRoot();
+  const prev = root.querySelector(".vg-toast");
+  if (prev) prev.remove();
+  const toast = document.createElement("div");
+  toast.className = "vg-toast";
+  toast.setAttribute(ATTRIBUTE_NAME, "true");
+  toast.style.position = "fixed";
+  toast.style.left = "50%";
+  toast.style.bottom = "24px";
+  toast.style.transform = "translateX(-50%)";
+  toast.style.zIndex = "2147483647";
+  toast.style.pointerEvents = "none";
+  toast.style.padding = "6px 10px";
+  toast.style.borderRadius = "6px";
+  toast.style.border = "2px solid #35495e";
+  toast.style.background = "#42b883";
+  toast.style.color = "#35495e";
+  toast.style.fontFamily = "system-ui, sans-serif";
+  toast.style.fontSize = "12px";
+  toast.style.fontWeight = "500";
+  toast.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
+  toast.style.opacity = "0";
+  toast.style.transition = "opacity 120ms ease";
+  toast.innerHTML = messageHTML;
+  root.appendChild(toast);
+  requestAnimationFrame(() => {
+    toast.style.opacity = "1";
+  });
+  window.setTimeout(() => {
+    toast.style.opacity = "0";
+    window.setTimeout(() => toast.remove(), 180);
+  }, duration);
+};
 
-// src/index.ts
+// src/modules/dom.ts
+var getVueComponentChain = (el) => {
+  const chain = [];
+  let comp = el.__vueParentComponent;
+  let cursor = el;
+  while (!comp && cursor?.parentElement) {
+    cursor = cursor.parentElement;
+    comp = cursor.__vueParentComponent;
+  }
+  while (comp) {
+    const info = {
+      name: comp?.type?.name ?? comp?.type?.__name ?? void 0,
+      file: comp?.type?.__file ?? void 0
+    };
+    chain.unshift(info);
+    comp = comp.parent;
+  }
+  return chain;
+};
+var formatVueChain = (chain) => {
+  if (!chain.length) return "(no vue component)";
+  const names = chain.map((c) => c.name || "Anonymous");
+  const files = chain.map((c) => c.file).filter(Boolean);
+  const head = names.join(" > ");
+  const tail = files.length ? `
+Files: ${files.join(" > ")}` : "";
+  return `Vue: ${head}${tail}`;
+};
+var getLocatorData = (el) => {
+  const vue = getVueComponentChain(el);
+  const tag = el.tagName.toLowerCase();
+  const id = el.id || void 0;
+  const clsList = (el.className || "").trim().split(/\s+/).filter(Boolean);
+  const cssPath = getCSSPath(el);
+  const text = (el.textContent || "").trim().replace(/\s+/g, " ");
+  const textSnippet = text.length > 160 ? text.slice(0, 160) + "..." : text;
+  return {
+    tag,
+    id,
+    classList: clsList,
+    cssPath,
+    textSnippet,
+    vue
+  };
+};
+var getElementAtMouse = (x, y) => {
+  const el = document.elementFromPoint(x, y);
+  return el instanceof Element ? el : null;
+};
+var getRect = (el) => {
+  const r = el.getBoundingClientRect();
+  return { x: r.left, y: r.top, width: r.width, height: r.height };
+};
+var getCSSPath = (el) => {
+  const path = [];
+  let cur = el;
+  while (cur) {
+    let selector = cur.tagName.toLowerCase();
+    const id = cur.id;
+    if (id) selector += `#${id}`;
+    const classes = cur.className?.trim()?.split(/\s+/) ?? [];
+    if (classes.length) selector += "." + classes.slice(0, 2).join(".");
+    path.unshift(selector);
+    cur = cur.parentElement;
+  }
+  return path.join(" > ");
+};
+var getHTMLSnippet = (el) => {
+  const lines = [];
+  const vueChain = getVueComponentChain(el);
+  lines.push(formatVueChain(vueChain));
+  lines.push(`
+Path: ${getCSSPath(el)}`);
+  lines.push("");
+  const ancestors = [];
+  let cur = el;
+  while (cur) {
+    ancestors.unshift(cur);
+    cur = cur.parentElement;
+  }
+  for (let i = 0; i < ancestors.length; i++) {
+    const indent2 = "  ".repeat(i);
+    const tag = ancestors[i].tagName.toLowerCase();
+    const id = ancestors[i].id;
+    const cls = ancestors[i].className;
+    lines.push(indent2 + `<${tag}${id ? `#${id}` : ""}${cls ? ` class="${cls}"` : ""}>`);
+  }
+  const text = (el.textContent || "").trim().replace(/\s+/g, " ");
+  const truncated = text.length > 60 ? text.slice(0, 60) + "..." : text;
+  const indent = "  ".repeat(ancestors.length);
+  if (truncated) lines.push(indent + truncated);
+  return lines.join("\n");
+};
+
+// src/modules/hotkeys.ts
+var normalizeKey = (key) => key.length === 1 ? key.toLowerCase() : key;
 var getDefaultHotkey = () => {
   if (typeof navigator === "undefined") return ["Meta", "C"];
   const isMac = navigator.platform.toLowerCase().includes("mac");
   return isMac ? ["Meta", "c"] : ["Control", "c"];
-};
-var normalizeKey = (key) => {
-  return key.length === 1 ? key.toLowerCase() : key;
 };
 var pressedKeys = /* @__PURE__ */ new Set();
 var lastKeyDownTimestamps = /* @__PURE__ */ new Map();
@@ -125,94 +244,8 @@ var isComboPressed = (hotkey) => {
   }
   return keys.every((k) => pressedKeys.has(k));
 };
-var getElementAtMouse = (x, y) => {
-  const el = document.elementFromPoint(x, y);
-  return el instanceof Element ? el : null;
-};
-var getRect = (el) => {
-  const r = el.getBoundingClientRect();
-  return { x: r.left, y: r.top, width: r.width, height: r.height };
-};
-var getVueInstance = (el) => {
-  let cur = el;
-  while (cur) {
-    const inst = cur.__vueParentComponent;
-    if (inst) return inst;
-    cur = cur.parentElement;
-  }
-  cur = el;
-  while (cur) {
-    const vm = cur.__vue__;
-    if (vm) return vm;
-    cur = cur.parentElement;
-  }
-  return null;
-};
-var getVueOwnerStack = (instOrVm) => {
-  const stack = [];
-  if (!instOrVm) return stack;
-  let cur = instOrVm;
-  for (let i = 0; i < 20 && cur; i++) {
-    if (cur.type) {
-      const name = cur.type.name || cur.type.__name || "<Anonymous>";
-      const fileName = cur.type.__file;
-      stack.push({ name, fileName });
-      cur = cur.parent;
-      continue;
-    }
-    if (cur.$options) {
-      const name = cur.$options.name || "<Anonymous>";
-      const fileName = cur.$options.__file;
-      stack.push({ name, fileName });
-      cur = cur.$parent;
-      continue;
-    }
-    break;
-  }
-  return stack.filter((s) => s.name && s.name.length > 1);
-};
-var serializeStack = (stack) => {
-  return stack.map((s) => `${s.name}${s.fileName ? ` (${s.fileName})` : ""}`).join("\n");
-};
-var getElementTag = (el) => {
-  const tag = el.tagName.toLowerCase();
-  const id = el.id ? `#${el.id}` : "";
-  const cls = el.className && typeof el.className === "string" && el.className.trim() ? "." + el.className.trim().split(/\s+/).slice(0, 3).join(".") : "";
-  return `<${tag}${id}${cls ? ` class="${el.className}"` : ""}>`;
-};
-var getCSSPath = (el) => {
-  const path = [];
-  let cur = el;
-  while (cur) {
-    let selector = cur.tagName.toLowerCase();
-    if (cur.id) selector += `#${cur.id}`;
-    const classes = cur.className && typeof cur.className === "string" ? cur.className.trim().split(/\s+/) : [];
-    if (classes.length) selector += "." + classes.slice(0, 2).join(".");
-    path.unshift(selector);
-    cur = cur.parentElement;
-  }
-  return path.join(" > ");
-};
-var getHTMLSnippet = (el) => {
-  const lines = [];
-  lines.push(`Path: ${getCSSPath(el)}`);
-  lines.push("");
-  const ancestors = [];
-  let cur = el;
-  while (cur) {
-    ancestors.unshift(cur);
-    cur = cur.parentElement;
-  }
-  for (let i = 0; i < ancestors.length; i++) {
-    const indent2 = "  ".repeat(i);
-    lines.push(indent2 + getElementTag(ancestors[i]));
-  }
-  const text = (el.textContent || "").trim().replace(/\s+/g, " ");
-  const truncated = text.length > 60 ? text.slice(0, 60) + "..." : text;
-  const indent = "  ".repeat(ancestors.length);
-  if (truncated) lines.push(indent + truncated);
-  return lines.join("\n");
-};
+
+// src/index.ts
 var init = (options = {}) => {
   if (options.enabled === false) return () => {
   };
@@ -222,7 +255,6 @@ var init = (options = {}) => {
     enabled: options.enabled ?? true,
     keyHoldDuration: options.keyHoldDuration ?? 500
   };
-  mountRoot();
   let mouseX = -1e3;
   let mouseY = -1e3;
   let hovered = null;
@@ -232,17 +264,10 @@ var init = (options = {}) => {
     const el = getElementAtMouse(mouseX, mouseY);
     hovered = el;
     if (el && isComboPressed(resolved.hotkey)) {
-      const rect = getRect(el);
-      renderOverlay(rect, el.tagName.toLowerCase());
+      renderOverlay(getRect(el), el.tagName.toLowerCase());
     } else {
       hideOverlay();
     }
-  };
-  const onMouseDown = (e) => {
-    if (!hovered) return;
-    if (!isComboPressed(resolved.hotkey)) return;
-    e.stopPropagation();
-    e.preventDefault();
   };
   const onClick = async (e) => {
     if (!hovered) return;
@@ -251,20 +276,22 @@ var init = (options = {}) => {
     e.preventDefault();
     try {
       const htmlSnippet = getHTMLSnippet(hovered);
-      const inst = getVueInstance(hovered);
-      const stack = serializeStack(getVueOwnerStack(inst));
-      const payload = stack ? `${htmlSnippet}
+      const locator = getLocatorData(hovered);
+      const locatorJSON = JSON.stringify(locator, null, 2);
+      const combined = `
 
-Component owner stack:
-${stack}` : htmlSnippet;
-      await copyTextToClipboard(`
+<vue_grab_locator>
+${locatorJSON}
+</vue_grab_locator>
 
 <referenced_element>
-${payload}
-</referenced_element>`);
-      if (resolved.adapter?.open) {
-        resolved.adapter.open(payload);
-      }
+${htmlSnippet}
+</referenced_element>`;
+      await copyTextToClipboard(combined);
+      hideOverlay();
+      const tag = hovered.tagName.toLowerCase();
+      showToast(`<strong>copy</strong> &lt;${tag}&gt;`);
+      resolved.adapter?.open?.(locatorJSON);
     } catch {
     }
   };
@@ -281,13 +308,11 @@ ${payload}
     if (!isComboPressed(resolved.hotkey)) hideOverlay();
   };
   window.addEventListener("mousemove", onMouseMove);
-  window.addEventListener("mousedown", onMouseDown, true);
   window.addEventListener("click", onClick, true);
   document.addEventListener("keydown", onKeyDown);
   document.addEventListener("keyup", onKeyUp);
   return () => {
     window.removeEventListener("mousemove", onMouseMove);
-    window.removeEventListener("mousedown", onMouseDown, true);
     window.removeEventListener("click", onClick, true);
     document.removeEventListener("keydown", onKeyDown);
     document.removeEventListener("keyup", onKeyUp);
@@ -295,21 +320,7 @@ ${payload}
   };
 };
 if (typeof window !== "undefined" && typeof document !== "undefined") {
-  const currentScript = document.currentScript;
-  const options = {};
-  if (currentScript?.dataset) {
-    const { adapter, enabled, hotkey, keyHoldDuration } = currentScript.dataset;
-    if (enabled !== void 0) options.enabled = enabled === "true";
-    if (hotkey !== void 0) {
-      const keys = hotkey.split(",").map((k) => normalizeKey(k.trim()));
-      options.hotkey = keys.length === 1 ? keys[0] : keys;
-    }
-    if (keyHoldDuration !== void 0) {
-      const d = Number(keyHoldDuration);
-      if (!Number.isNaN(d)) options.keyHoldDuration = d;
-    }
-  }
-  init(options);
+  init({});
 }
 
 exports.init = init;

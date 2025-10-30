@@ -1,7 +1,7 @@
 import type { SelectionBox } from "./modules/overlay";
 import { copyTextToClipboard } from "./modules/clipboard";
 import { hideOverlay, renderOverlay, showToast } from "./modules/overlay";
-import { getElementAtMouse, getRect, getHTMLSnippet } from "./modules/dom";
+import { getElementAtMouse, getRect, getHTMLSnippet, getLocatorData } from "./modules/dom";
 import {
   normalizeKey,
   getDefaultHotkey,
@@ -51,13 +51,14 @@ export const init = (options: Options = {}) => {
     e.preventDefault();
     try {
       const htmlSnippet = getHTMLSnippet(hovered);
-      const payload = htmlSnippet;
-      await copyTextToClipboard(`\n\n<referenced_element>\n${payload}\n</referenced_element>`);
-      // 复制完成后：取消选框并弹出提示
+      const locator = getLocatorData(hovered);
+      const locatorJSON = JSON.stringify(locator, null, 2);
+      const combined = `\n\n<vue_grab_locator>\n${locatorJSON}\n</vue_grab_locator>\n\n<referenced_element>\n${htmlSnippet}\n</referenced_element>`;
+      await copyTextToClipboard(combined);
       hideOverlay();
       const tag = hovered.tagName.toLowerCase();
       showToast(`<strong>copy</strong> &lt;${tag}&gt;`);
-      resolved.adapter?.open?.(payload);
+      resolved.adapter?.open?.(locatorJSON);
     } catch {}
   };
 

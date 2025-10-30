@@ -33,8 +33,7 @@
 
 ## Demo 与本地预览
 
-- Demo 页面：`vue-grab/demo/index.html`
-- 本地预览地址：`http://127.0.0.1:5174/vue-grab/demo/index.html`
+- Demo 页面：`src/website`
 - 操作方法：
   - 方式 A：按住 `Ctrl`+`c`（或 `⌘`+`c`），移动到元素上出现高亮，点击抓取。
   - 方式 B：按住 `Ctrl`（或 `⌘`），快速点按 `c`，在 800ms 内移动并点击。
@@ -44,11 +43,8 @@
 ```bash
 pnpm install
 pnpm -C vue-grab build
-pnpm dlx http-server . -p 5174
 ```
 
 ## 重要说明
 
-- 这是一个学习项目，目前还是 MVP 阶段，请不要用于生产环境。
 - 组件栈解析依赖运行时的内部属性，不同环境可能表现不同。
-- 错误处理、跨浏览器验证与适配器仍在完善中，当前以基本可用为主。

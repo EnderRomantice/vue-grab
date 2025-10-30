@@ -31,8 +31,7 @@ CDN (after publish):
 
 ## Demo & Local Preview
 
-- Demo page: `vue-grab/demo/index.html`
-- Local preview: `http://127.0.0.1:5174/vue-grab/demo/index.html`
+- Demo page: `src/website`
 - Interactions:
   - Method A: hold `Ctrl`+`c` (or `⌘`+`c`), move to highlight, click to grab.
   - Method B: hold `Ctrl` (or `⌘`), quick tap `c`, then move and click within 800ms.
@@ -42,12 +41,8 @@ CDN (after publish):
 ```bash
 pnpm install
 pnpm -C vue-grab build
-pnpm dlx http-server . -p 5174
 ```
 
 ## Important
 
-- Learning project / MVP — please don’t use in production.
 - Stack extraction relies on runtime internals and may vary by environment.
-- Error handling, cross-browser checks, and adapters are still in progress.
-

@@ -1,5 +1,57 @@
 import type { SelectionBox } from "./overlay";
 
+type VueComponentInfo = { name?: string; file?: string };
+
+const getVueComponentChain = (el: Element): VueComponentInfo[] => {
+  const chain: VueComponentInfo[] = [];
+  let comp: any = (el as any).__vueParentComponent;
+  // 如果当前元素没有绑定组件，尝试向上寻找最近的父元素
+  let cursor: Element | null = el;
+  while (!comp && cursor?.parentElement) {
+    cursor = cursor.parentElement;
+    comp = (cursor as any).__vueParentComponent;
+  }
+  while (comp) {
+    const info: VueComponentInfo = {
+      name: comp?.type?.name ?? comp?.type?.__name ?? undefined,
+      file: comp?.type?.__file ?? undefined,
+    };
+    chain.unshift(info);
+    comp = comp.parent;
+  }
+  return chain;
+};
+
+const formatVueChain = (chain: VueComponentInfo[]) => {
+  if (!chain.length) return "(no vue component)";
+  const names = chain.map((c) => c.name || "Anonymous");
+  const files = chain.map((c) => c.file).filter(Boolean);
+  const head = names.join(" > ");
+  const tail = files.length ? `\nFiles: ${files.join(" > ")}` : "";
+  return `Vue: ${head}${tail}`;
+};
+
+export const getLocatorData = (el: Element) => {
+  const vue = getVueComponentChain(el);
+  const tag = el.tagName.toLowerCase();
+  const id = (el as HTMLElement).id || undefined;
+  const clsList = ((el as HTMLElement).className || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  const cssPath = getCSSPath(el);
+  const text = (el.textContent || "").trim().replace(/\s+/g, " ");
+  const textSnippet = text.length > 160 ? text.slice(0, 160) + "..." : text;
+  return {
+    tag,
+    id,
+    classList: clsList,
+    cssPath,
+    textSnippet,
+    vue,
+  } as const;
+};
+
 export const getElementAtMouse = (x: number, y: number): Element | null => {
   const el = document.elementFromPoint(x, y);
   return el instanceof Element ? el : null;
@@ -27,7 +79,9 @@ export const getCSSPath = (el: Element) => {
 
 export const getHTMLSnippet = (el: Element) => {
   const lines: string[] = [];
-  lines.push(`Path: ${getCSSPath(el)}`);
+  const vueChain = getVueComponentChain(el);
+  lines.push(formatVueChain(vueChain));
+  lines.push(`\nPath: ${getCSSPath(el)}`);
   lines.push("");
   const ancestors: Element[] = [];
   let cur: Element | null = el;
