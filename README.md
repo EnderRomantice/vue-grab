@@ -19,6 +19,8 @@ I came across the React Grab project on Twitter. It was fun and useful, and I fe
 
 > you can find index.global.js in the "/dist" directory.
 
+[Try of Online](https://vue-grab.vercel.app/)
+
 ```html
 <script src="./dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
 ```
