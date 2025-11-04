@@ -23,14 +23,16 @@
 
 > 你可以在 “/dist” 目录下找到index.golobal.js
 
+本地使用:
+
 ```html
 <script src="./dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
 ```
 
-（未来发布到 CDN 后可用）
+在线使用:
 
 ```html
-<script src="//unpkg.com/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
+<script src="//unpkg.com/@enderromantice/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
 ```
 
 ## Demo 与本地预览

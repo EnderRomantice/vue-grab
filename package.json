@@ -1,8 +1,37 @@
 {
-  "name": "vue-grab",
+  "name": "@enderromantice/vue-grab",
   "version": "1.0.0",
-  "private": true,
   "type": "module",
+  "description": "Vue implementation of react-grab: Grab any element in your app and give it to AI tools.",
+  "keywords": [
+    "vue",
+    "vue3",
+    "grab",
+    "copy",
+    "element",
+    "ai",
+    "clipboard"
+  ],
+  "author": "EnderRomantice",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EnderRomantice/vue-grab.git"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch --ignore-watch dist"

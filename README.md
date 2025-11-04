@@ -21,14 +21,16 @@ I came across the React Grab project on Twitter. It was fun and useful, and I fe
 
 [Try of Online](https://vue-grab.vercel.app/)
 
+local use
+
 ```html
 <script src="./dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
 ```
 
-CDN (after publish):
+online use:
 
 ```html
-<script src="//unpkg.com/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
+<script src="//unpkg.com/@enderromantice/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
 ```
 
 ## Demo & Local Preview
