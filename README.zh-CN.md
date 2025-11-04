@@ -32,7 +32,7 @@
 在线使用:
 
 ```html
-<script src="//unpkg.com/@enderromantice/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
+<script src="//unpkg.com/@ender_romantice/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
 ```
 
 ## Demo 与本地预览

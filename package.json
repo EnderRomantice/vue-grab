@@ -1,5 +1,5 @@
 {
-  "name": "@enderromantice/vue-grab",
+  "name": "@ender_romantice/vue-grab",
   "version": "1.0.0",
   "type": "module",
   "description": "Vue implementation of react-grab: Grab any element in your app and give it to AI tools.",
