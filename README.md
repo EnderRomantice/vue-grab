@@ -14,6 +14,9 @@ I came across the React Grab project on Twitter. It was fun and useful, and I fe
 - Copies the element’s HTML snippet and a best-effort Vue component stack to the clipboard.
 - Clipboard content is wrapped in `<referenced_element>` for easier reference in tools.
 - Overlay runs in a Shadow DOM to avoid interfering with app styles.
+- **Smart Vue component parsing**: Automatically extracts Vue component names and corresponding source file paths.
+- **Element text extraction**: Automatically extracts target element's text content (intelligently truncates long text).
+- **CSS selector path**: Automatically generates complete CSS selector paths for elements.
 
 ## Quick start
 
