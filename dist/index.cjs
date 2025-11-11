@@ -232,20 +232,32 @@ var getDefaultHotkey = () => {
 var pressedKeys = /* @__PURE__ */ new Set();
 var lastKeyDownTimestamps = /* @__PURE__ */ new Map();
 var comboWindowMs = 800;
-var isComboPressed = (hotkey) => {
-  const keys = (Array.isArray(hotkey) ? hotkey : [hotkey]).map(normalizeKey);
+var isComboPressed = (hotkey, holdMs) => {
+  const windowMs = holdMs ?? comboWindowMs;
+  const toKeys = (hk) => (Array.isArray(hk) ? hk : [hk]).map(normalizeKey);
+  const keys = toKeys(hotkey);
+  const isKeyActive = (k) => {
+    if (k === "c") {
+      const cHeld = pressedKeys.has("c");
+      const cRecent = (lastKeyDownTimestamps.get("c") ?? 0) > Date.now() - windowMs;
+      return cHeld || cRecent;
+    }
+    return pressedKeys.has(k);
+  };
+  if (Array.isArray(hotkey) && keys.every((k) => k.length === 1)) {
+    return keys.some((k) => isKeyActive(k));
+  }
   const hasC = keys.includes("c");
   const modifiers = keys.filter((k) => k !== "c");
   const modifiersHeld = modifiers.every((k) => pressedKeys.has(k));
   if (hasC) {
-    const cHeld = pressedKeys.has("c");
-    const cRecent = (lastKeyDownTimestamps.get("c") ?? 0) > Date.now() - comboWindowMs;
-    return modifiersHeld && (cHeld || cRecent);
+    return modifiersHeld && isKeyActive("c");
   }
   return keys.every((k) => pressedKeys.has(k));
 };
 
 // src/index.ts
+var activeCleanup = null;
 var init = (options = {}) => {
   if (options.enabled === false) return () => {
   };
@@ -255,6 +267,10 @@ var init = (options = {}) => {
     enabled: options.enabled ?? true,
     keyHoldDuration: options.keyHoldDuration ?? 500
   };
+  try {
+    activeCleanup?.();
+  } catch {
+  }
   let mouseX = -1e3;
   let mouseY = -1e3;
   let hovered = null;
@@ -263,7 +279,7 @@ var init = (options = {}) => {
     mouseY = e.clientY;
     const el = getElementAtMouse(mouseX, mouseY);
     hovered = el;
-    if (el && isComboPressed(resolved.hotkey)) {
+    if (el && isComboPressed(resolved.hotkey, resolved.keyHoldDuration)) {
       renderOverlay(getRect(el), el.tagName.toLowerCase());
     } else {
       hideOverlay();
@@ -271,7 +287,7 @@ var init = (options = {}) => {
   };
   const onClick = async (e) => {
     if (!hovered) return;
-    if (!isComboPressed(resolved.hotkey)) return;
+    if (!isComboPressed(resolved.hotkey, resolved.keyHoldDuration)) return;
     e.stopPropagation();
     e.preventDefault();
     try {
@@ -299,25 +315,27 @@ ${htmlSnippet}
     const k = normalizeKey(e.key);
     pressedKeys.add(k);
     lastKeyDownTimestamps.set(k, Date.now());
-    if (hovered && isComboPressed(resolved.hotkey)) {
+    if (hovered && isComboPressed(resolved.hotkey, resolved.keyHoldDuration)) {
       renderOverlay(getRect(hovered), hovered.tagName.toLowerCase());
     }
   };
   const onKeyUp = (e) => {
     pressedKeys.delete(normalizeKey(e.key));
-    if (!isComboPressed(resolved.hotkey)) hideOverlay();
+    if (!isComboPressed(resolved.hotkey, resolved.keyHoldDuration)) hideOverlay();
   };
   window.addEventListener("mousemove", onMouseMove);
   window.addEventListener("click", onClick, true);
   document.addEventListener("keydown", onKeyDown);
   document.addEventListener("keyup", onKeyUp);
-  return () => {
+  const cleanup = () => {
     window.removeEventListener("mousemove", onMouseMove);
     window.removeEventListener("click", onClick, true);
     document.removeEventListener("keydown", onKeyDown);
     document.removeEventListener("keyup", onKeyUp);
     hideOverlay();
   };
+  activeCleanup = cleanup;
+  return cleanup;
 };
 if (typeof window !== "undefined" && typeof document !== "undefined") {
   init({});

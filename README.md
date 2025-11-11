@@ -97,8 +97,8 @@ init()
 // Or with custom options
 init({
   enabled: true,
-  hotkey: 'c', // or ['c', 'v'] for multiple hotkeys
-  keyHoldDuration: 500, // Key hold duration in milliseconds
+  hotkey: 'c', // or ['c', 'v'] for multiple hotkeys (see notes)
+  keyHoldDuration: 500, // key hold window in milliseconds
   adapter: {
     open: (text) => {
       // Custom handler, e.g., open external tool
@@ -106,6 +106,11 @@ init({
     }
   }
 })
+// Notes:
+// - When hotkey is an array of single-letter keys (e.g. ['c','v']), it uses OR semantics: pressing any one letter triggers.
+// - When hotkey includes modifiers (e.g. ['Control','c'] or ['Meta','c']), it uses combo (AND) semantics: keys must be pressed together.
+// - keyHoldDuration controls the "recent press" window for 'c' (in ms), making combos more natural to trigger.
+// - init is idempotent: calling it multiple times won’t duplicate listeners; later calls override earlier config.
 ```
 
 ## Project Structure
@@ -177,6 +182,9 @@ Path: html > body > div#example.card
       <div#example class="card highlight">
         Example text content...
 </referenced_element>
+
+
+
 ```
 
 ## ⚠️ Important Notes

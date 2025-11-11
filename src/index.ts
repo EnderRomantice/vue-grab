@@ -1,4 +1,3 @@
-import type { SelectionBox } from "./modules/overlay";
 import { copyTextToClipboard } from "./modules/clipboard";
 import { hideOverlay, renderOverlay, showToast } from "./modules/overlay";
 import { getElementAtMouse, getRect, getHTMLSnippet, getLocatorData } from "./modules/dom";
@@ -19,6 +18,9 @@ export interface Options {
   keyHoldDuration?: number;
 }
 
+// Ensure single active instance: re-init will clean up previous listeners
+let activeCleanup: (() => void) | null = null;
+
 export const init = (options: Options = {}) => {
   if (options.enabled === false) return () => {};
   const resolved = {
@@ -27,6 +29,11 @@ export const init = (options: Options = {}) => {
     enabled: options.enabled ?? true,
     keyHoldDuration: options.keyHoldDuration ?? 500,
   } satisfies Options;
+
+  // If already initialized, clean up previous listeners to avoid duplicates
+  try {
+    activeCleanup?.();
+  } catch {}
 
   let mouseX = -1000;
   let mouseY = -1000;
@@ -37,7 +44,7 @@ export const init = (options: Options = {}) => {
     mouseY = e.clientY;
     const el = getElementAtMouse(mouseX, mouseY);
     hovered = el;
-    if (el && isComboPressed(resolved.hotkey!)) {
+    if (el && isComboPressed(resolved.hotkey!, resolved.keyHoldDuration)) {
       renderOverlay(getRect(el), el.tagName.toLowerCase());
     } else {
       hideOverlay();
@@ -46,7 +53,7 @@ export const init = (options: Options = {}) => {
 
   const onClick = async (e: MouseEvent) => {
     if (!hovered) return;
-    if (!isComboPressed(resolved.hotkey!)) return;
+    if (!isComboPressed(resolved.hotkey!, resolved.keyHoldDuration)) return;
     e.stopPropagation();
     e.preventDefault();
     try {
@@ -66,13 +73,13 @@ export const init = (options: Options = {}) => {
     const k = normalizeKey(e.key);
     pressedKeys.add(k as Hotkey);
     lastKeyDownTimestamps.set(k, Date.now());
-    if (hovered && isComboPressed(resolved.hotkey!)) {
+    if (hovered && isComboPressed(resolved.hotkey!, resolved.keyHoldDuration)) {
       renderOverlay(getRect(hovered), hovered.tagName.toLowerCase());
     }
   };
   const onKeyUp = (e: KeyboardEvent) => {
     pressedKeys.delete(normalizeKey(e.key) as Hotkey);
-    if (!isComboPressed(resolved.hotkey!)) hideOverlay();
+    if (!isComboPressed(resolved.hotkey!, resolved.keyHoldDuration)) hideOverlay();
   };
 
   window.addEventListener("mousemove", onMouseMove);
@@ -80,13 +87,15 @@ export const init = (options: Options = {}) => {
   document.addEventListener("keydown", onKeyDown);
   document.addEventListener("keyup", onKeyUp);
 
-  return () => {
+  const cleanup = () => {
     window.removeEventListener("mousemove", onMouseMove);
     window.removeEventListener("click", onClick, true);
     document.removeEventListener("keydown", onKeyDown);
     document.removeEventListener("keyup", onKeyUp);
     hideOverlay();
   };
+  activeCleanup = cleanup;
+  return cleanup;
 };
 
 if (typeof window !== "undefined" && typeof document !== "undefined") {

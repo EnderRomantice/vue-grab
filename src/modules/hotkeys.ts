@@ -12,15 +12,35 @@ export const pressedKeys = new Set<Hotkey>();
 export const lastKeyDownTimestamps = new Map<string, number>();
 const comboWindowMs = 800;
 
-export const isComboPressed = (hotkey: Hotkey | Hotkey[]) => {
-  const keys = (Array.isArray(hotkey) ? hotkey : [hotkey]).map(normalizeKey);
+// Return whether a hotkey (single, combo, or multi-letter OR) is considered pressed.
+// holdMs: configurable window for "c" recent-press detection; defaults to comboWindowMs.
+export const isComboPressed = (hotkey: Hotkey | Hotkey[], holdMs?: number) => {
+  const windowMs = holdMs ?? comboWindowMs;
+  const toKeys = (hk: Hotkey | Hotkey[]) => (Array.isArray(hk) ? hk : [hk]).map(normalizeKey);
+  const keys = toKeys(hotkey);
+
+  // Helper: check if a single key is held or (for 'c') recently pressed
+  const isKeyActive = (k: string) => {
+    if (k === "c") {
+      const cHeld = pressedKeys.has("c" as Hotkey);
+      const cRecent = (lastKeyDownTimestamps.get("c") ?? 0) > Date.now() - windowMs;
+      return cHeld || cRecent;
+    }
+    return pressedKeys.has(k as Hotkey);
+  };
+
+  // If all entries are single letters and no modifiers (e.g., ['c','v']),
+  // treat as OR semantics: pressing any one letter triggers.
+  if (Array.isArray(hotkey) && keys.every((k) => k.length === 1)) {
+    return keys.some((k) => isKeyActive(k));
+  }
+
+  // Otherwise treat as a combo (AND semantics), with special handling for 'c'
   const hasC = keys.includes("c");
   const modifiers = keys.filter((k) => k !== "c");
   const modifiersHeld = modifiers.every((k) => pressedKeys.has(k as Hotkey));
   if (hasC) {
-    const cHeld = pressedKeys.has("c" as Hotkey);
-    const cRecent = (lastKeyDownTimestamps.get("c") ?? 0) > Date.now() - comboWindowMs;
-    return modifiersHeld && (cHeld || cRecent);
+    return modifiersHeld && isKeyActive("c");
   }
   return keys.every((k) => pressedKeys.has(k as Hotkey));
 };
