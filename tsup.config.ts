@@ -30,6 +30,8 @@ export default defineConfig([
     ...DEFAULT_OPTIONS,
     entry: ["./src/index.ts"],
     format: ["cjs", "esm"],
+    // Enable type declaration generation for TS consumers
+    dts: true,
     outDir: "./dist",
   },
 ]);
