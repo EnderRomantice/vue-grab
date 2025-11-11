@@ -1,6 +1,7 @@
 import { copyTextToClipboard } from "./modules/clipboard";
 import { hideOverlay, renderOverlay, showToast } from "./modules/overlay";
 import { getElementAtMouse, getRect, getHTMLSnippet, getLocatorData } from "./modules/dom";
+import { updateConfig } from "./modules/config";
 import {
   normalizeKey,
   getDefaultHotkey,
@@ -16,6 +17,15 @@ export interface Options {
   enabled?: boolean;
   hotkey?: Hotkey | Hotkey[];
   keyHoldDuration?: number;
+  // New configurations
+  highlightColor?: string;
+  labelTextColor?: string;
+  showTagHint?: boolean;
+  filter?: {
+    ignoreSelectors?: string[];
+    ignoreTags?: string[];
+    skipCommonComponents?: boolean;
+  };
 }
 
 // Ensure single active instance: re-init will clean up previous listeners
@@ -29,6 +39,20 @@ export const init = (options: Options = {}) => {
     enabled: options.enabled ?? true,
     keyHoldDuration: options.keyHoldDuration ?? 500,
   } satisfies Options;
+
+  // Apply runtime UI/behavior configuration
+  updateConfig({
+    highlight: {
+      color: options.highlightColor,
+      labelTextColor: options.labelTextColor,
+    },
+    filter: {
+      ignoreSelectors: options.filter?.ignoreSelectors,
+      ignoreTags: options.filter?.ignoreTags,
+      skipCommonComponents: options.filter?.skipCommonComponents,
+    },
+    showTagHint: options.showTagHint ?? true,
+  });
 
   // If already initialized, clean up previous listeners to avoid duplicates
   try {
