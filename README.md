@@ -28,6 +28,9 @@ This information is formatted and copied to the clipboard, ready to paste into A
 - **Style isolation**: Overlay uses Shadow DOM to avoid interfering with page styles
 - **Component tracking**: Automatically parses and displays Vue component hierarchy
 - **Lightweight**: Small bundle size with no extra dependencies
+- **Configurable highlight**: Customize highlight color and label text color
+- **Element filtering**: Ignore specific selectors/tags or skip common layout components
+- **Tag hint toggle**: Enable/disable the floating tag hint over the target
 
 ## Quick Start
 
@@ -99,6 +102,15 @@ init({
   enabled: true,
   hotkey: 'c', // or ['c', 'v'] for multiple hotkeys (see notes)
   keyHoldDuration: 500, // key hold window in milliseconds
+  // New UI/behavior configs
+  highlightColor: '#2563EB', // border + label background color
+  labelTextColor: '#ffffff', // label text color
+  showTagHint: true,         // toggle tag hint display
+  filter: {
+    ignoreSelectors: ['.nav', 'header'], // selectors to ignore
+    ignoreTags: ['svg'],                  // tag names to ignore
+    skipCommonComponents: true,           // skip header/nav/footer/aside
+  },
   adapter: {
     open: (text) => {
       // Custom handler, e.g., open external tool
@@ -111,7 +123,23 @@ init({
 // - When hotkey includes modifiers (e.g. ['Control','c'] or ['Meta','c']), it uses combo (AND) semantics: keys must be pressed together.
 // - keyHoldDuration controls the "recent press" window for 'c' (in ms), making combos more natural to trigger.
 // - init is idempotent: calling it multiple times won’t duplicate listeners; later calls override earlier config.
+// - The selection box is filled with a semi-transparent version of highlightColor for better contrast.
 ```
+
+### Configuration Reference
+
+- highlightColor: string
+  - Main accent color for the selection border and label background
+- labelTextColor: string
+  - Text color used in the label
+- showTagHint: boolean
+  - Show/hide the floating tag label while hovering
+- filter.ignoreSelectors: string[]
+  - CSS selectors to ignore (elements matching these will be skipped; the search continues up the DOM)
+- filter.ignoreTags: string[]
+  - Tag names to ignore (e.g. `['svg', 'canvas']`)
+- filter.skipCommonComponents: boolean
+  - If true, skip common layout elements: `header`, `nav`, `footer`, `aside`
 
 ## Project Structure
 
@@ -187,16 +215,16 @@ Path: html > body > div#example.card
 
 ```
 
-## ⚠️ Important Notes
+## Important Notes
 
 - **Component stack parsing**: Component stack parsing relies on Vue runtime internals (`__vueParentComponent`), which may behave differently across environments or Vue versions
 - **Browser compatibility**: Requires modern browser APIs (e.g., Shadow DOM, Clipboard API)
 - **Hotkey conflicts**: `Ctrl+C` is the system copy shortcut. This tool intercepts this key combination, so adjust accordingly based on your needs
 
-## 📄 License
+## License
 
 MIT
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 Inspired by the [React Grab](https://github.com/aidenybai/react-grab) project.
