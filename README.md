@@ -68,7 +68,7 @@ This information is formatted and copied to the clipboard, ready to paste into A
 
 ### Use in Your Project
 
-#### Method 1: CDN (Recommended for quick testing)
+#### Method 1: CDN
 
 ```html
 <!-- Online CDN -->
