@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import 'uno.css'
-import { init } from '../../dist/index.js'
+import { init } from '@ender_romantice/vue-grab'
 
 init({
   enabled: true,
