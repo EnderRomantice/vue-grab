@@ -2,7 +2,7 @@
 
 > 语言：中文 | [English](README.md)
 
-<img src="./public/vue-grab.svg" alt="Vue Grab Logo">
+<img src="./public/vue-grab.svg" width="400" height="400" alt="Vue Grab Logo">
 
 一个 Vue 3 工具库，让你可以轻松抓取页面上的任何元素，并将其 HTML 片段和 Vue 组件栈信息复制到剪贴板，方便在 AI 工具中使用。
 
