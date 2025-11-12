@@ -1,4 +1,5 @@
 import type { SelectionBox } from "./overlay";
+import { getConfig } from "./config";
 
 type VueComponentInfo = { name?: string; file?: string };
 
@@ -53,8 +54,30 @@ export const getLocatorData = (el: Element) => {
 };
 
 export const getElementAtMouse = (x: number, y: number): Element | null => {
-  const el = document.elementFromPoint(x, y);
-  return el instanceof Element ? el : null;
+  let el = document.elementFromPoint(x, y);
+  if (!(el instanceof Element)) return null;
+  const cfg = getConfig();
+  const ignoreTags = (cfg.filter.ignoreTags ?? []).map((t) => t.toLowerCase());
+  const commonTags = ["header", "nav", "footer", "aside"];
+  const shouldIgnore = (node: Element) => {
+    const tag = node.tagName.toLowerCase();
+    if (ignoreTags.includes(tag)) return true;
+    if (cfg.filter.skipCommonComponents && commonTags.includes(tag)) return true;
+    const selectors = cfg.filter.ignoreSelectors ?? [];
+    if (selectors.length) {
+      try {
+        for (const sel of selectors) {
+          if (sel && (node as HTMLElement).matches && (node as HTMLElement).matches(sel)) return true;
+        }
+      } catch {}
+    }
+    return false;
+  };
+  let cursor: Element | null = el;
+  while (cursor && shouldIgnore(cursor)) {
+    cursor = cursor.parentElement;
+  }
+  return cursor;
 };
 
 export const getRect = (el: Element): SelectionBox => {

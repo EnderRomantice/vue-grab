@@ -28,6 +28,9 @@
 - **样式隔离**：覆盖层使用 Shadow DOM，不影响页面原有样式
 - **组件追踪**：自动解析并显示 Vue 组件层级关系
 - **轻量级**：体积小，无额外依赖
+- **高亮可配置**：可自定义高亮颜色和标签文字颜色
+- **元素过滤**：可忽略指定选择器/标签，或跳过常见布局组件
+- **标签提示开关**：可开关悬浮标签提示
 
 ## 快速开始
 
@@ -99,6 +102,15 @@ init({
   enabled: true,
   hotkey: 'c', // 或 ['c', 'v'] 支持多个快捷键
   keyHoldDuration: 500, // 按键持续时间（毫秒）
+  // 新增的 UI/行为配置
+  highlightColor: '#2563EB', // 边框 + 标签背景色
+  labelTextColor: '#ffffff', // 标签文字颜色
+  showTagHint: true,         // 是否显示悬浮标签
+  filter: {
+    ignoreSelectors: ['.nav', 'header'], // 需要忽略的选择器
+    ignoreTags: ['svg'],                  // 需要忽略的标签名
+    skipCommonComponents: true,           // 跳过 header/nav/footer/aside
+  },
   adapter: {
     open: (text) => {
       // 自定义处理函数，例如打开外部工具
@@ -111,7 +123,23 @@ init({
 // - 当 hotkey 数组包含修饰键（如 ['Control','c'] 或 ['Meta','c']），表示组合（AND）语义：需同时按下。
 // - keyHoldDuration 控制对 'c' 键的“最近按下”判定时间窗口（毫秒），用于配合组合键更自然地触发。
 // - init 是幂等的：多次调用不会重复注册监听器，后一次会覆盖前一次配置。
+// - 选择框会使用 highlightColor 的半透明填充，以提升在不同背景下的可读性。
 ```
+
+### 配置项说明
+
+- highlightColor: string
+  - 高亮主色（用于选择框边框与标签背景）
+- labelTextColor: string
+  - 标签文字颜色
+- showTagHint: boolean
+  - 是否显示悬浮的标签提示
+- filter.ignoreSelectors: string[]
+  - 需要忽略的 CSS 选择器（命中元素会被跳过，并继续向上寻找父元素）
+- filter.ignoreTags: string[]
+  - 需要忽略的标签名（如 `['svg', 'canvas']`）
+- filter.skipCommonComponents: boolean
+  - 是否跳过常见布局元素：`header`、`nav`、`footer`、`aside`
 
 ## 项目结构
 
@@ -184,16 +212,16 @@ Path: html > body > div#example.card
 </referenced_element>
 ```
 
-## ⚠️ 重要说明
+## 重要说明
 
 - **组件栈解析**：组件栈解析依赖 Vue 运行时的内部属性（`__vueParentComponent`），不同环境或 Vue 版本可能表现不同
 - **浏览器兼容性**：需要支持现代浏览器 API（如 Shadow DOM、Clipboard API）
 - **快捷键冲突**：`Ctrl+C` 是系统复制快捷键，本工具会拦截该组合键，请根据实际情况调整
 
-## 📄 许可证
+## 许可证
 
 MIT
 
-## 🙏 致谢
+## 致谢
 
 灵感来源于 [React Grab](https://github.com/aidenybai/react-grab) 项目。

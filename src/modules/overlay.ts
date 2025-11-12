@@ -1,4 +1,16 @@
 const ATTRIBUTE_NAME = "data-vue-grab";
+import { getConfig, DEFAULTS } from "./config";
+
+const hexToRGBA = (hex: string, alpha: number): string => {
+  const normalized = hex.replace("#", "");
+  const full = normalized.length === 3
+    ? normalized.split("").map((c) => c + c).join("")
+    : normalized;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${Math.max(0, Math.min(1, alpha))})`;
+};
 
 const mountRoot = () => {
   const mountedHost = document.querySelector(`[${ATTRIBUTE_NAME}]`);
@@ -26,19 +38,27 @@ export const ensureOverlay = () => {
   const root = mountRoot();
   let box = root.querySelector(".vg-box") as HTMLDivElement | null;
   if (!box) {
+    const { highlight } = getConfig();
+    const borderColor = highlight.color ?? DEFAULTS.DEFAULT_COLOR;
+    const boxShadow = highlight.boxShadow ?? DEFAULTS.DEFAULT_BOX_SHADOW;
     box = document.createElement("div");
     box.className = "vg-box";
     box.setAttribute(ATTRIBUTE_NAME, "true");
     box.style.position = "fixed";
     box.style.pointerEvents = "none";
-    box.style.border = "2px solid #77E1D5";
+    box.style.border = `2px solid ${borderColor}`;
     box.style.borderRadius = "6px";
-    box.style.boxShadow = "0 0 0 1px rgba(119,225,213,0.3), 0 0 0 6px rgba(119,225,213,0.1)";
+    box.style.boxShadow = boxShadow;
+    // semi-transparent fill derived from highlight color
+    box.style.background = hexToRGBA(borderColor, 0.12);
     box.style.zIndex = "2147483647";
     root.appendChild(box);
   }
   let label = root.querySelector(".vg-label") as HTMLDivElement | null;
   if (!label) {
+    const { highlight } = getConfig();
+    const bg = highlight.color ?? DEFAULTS.DEFAULT_COLOR;
+    const textColor = highlight.labelTextColor ?? DEFAULTS.DEFAULT_LABEL_TEXT;
     label = document.createElement("div");
     label.className = "vg-label";
     label.setAttribute(ATTRIBUTE_NAME, "true");
@@ -46,8 +66,8 @@ export const ensureOverlay = () => {
     label.style.padding = "2px 6px";
     label.style.fontFamily = "system-ui, sans-serif";
     label.style.fontSize = "11px";
-    label.style.color = "#222";
-    label.style.background = "#77E1D5";
+    label.style.color = textColor;
+    label.style.background = bg;
     label.style.borderRadius = "4px";
     label.style.boxShadow = "0 1px 4px rgba(0,0,0,0.12)";
     label.style.zIndex = "2147483647";
@@ -63,17 +83,23 @@ export const hideOverlay = () => {
 };
 
 export const renderOverlay = (rect: SelectionBox, text?: string) => {
+  const { showTagHint } = getConfig();
   const { box, label } = ensureOverlay();
   if (!box || !label) return;
   box.style.left = `${rect.x}px`;
   box.style.top = `${rect.y}px`;
   box.style.width = `${rect.width}px`;
   box.style.height = `${rect.height}px`;
-  const labelX = rect.x;
-  const labelY = Math.max(8, rect.y - 24);
-  label.style.left = `${labelX}px`;
-  label.style.top = `${labelY}px`;
-  label.textContent = text ?? "VueGrab";
+  if (showTagHint) {
+    const labelX = rect.x;
+    const labelY = Math.max(8, rect.y - 24);
+    label.style.left = `${labelX}px`;
+    label.style.top = `${labelY}px`;
+    label.textContent = text ?? "VueGrab";
+    label.style.display = "block";
+  } else {
+    label.style.display = "none";
+  }
 };
 
 // 独立弹窗：复制后提示“copy <tag>”，配色与网站风格一致（Vue 绿与深色）
