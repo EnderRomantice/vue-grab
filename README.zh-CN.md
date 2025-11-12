@@ -2,6 +2,8 @@
 
 > 语言：中文 | [English](README.md)
 
+<img src="E:\open_code\vue-grab\website\src\assets\vue-grab.svg" alt="Vue Grab Logo">
+
 一个 Vue 3 工具库，让你可以轻松抓取页面上的任何元素，并将其 HTML 片段和 Vue 组件栈信息复制到剪贴板，方便在 AI 工具中使用。
 
 ## 这个项目是怎么来的？

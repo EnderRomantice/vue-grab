@@ -9,7 +9,7 @@
                 <img
                     src="./assets/vue-grab.svg"
                     alt="Vue logo"
-                    class="w-8 h-8"
+                    class="w-20 h-20"
                 />
                 <h1 class="pixel-font text-3xl md:text-4xl tracking-widest">
                     vue-grab

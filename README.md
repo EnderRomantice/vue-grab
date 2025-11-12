@@ -2,6 +2,8 @@
 
 > Language: English | [中文](README.zh-CN.md)
 
+<img src="E:\open_code\vue-grab\website\src\assets\vue-grab.svg" alt="Vue Grab Logo">
+
 A Vue 3 utility library that lets you easily grab any element on the page and copy its HTML snippet and Vue component stack information to the clipboard, making it convenient to use in AI tools.
 
 ## How did this project start?
@@ -44,7 +46,7 @@ This information is formatted and copied to the clipboard, ready to paste into A
    ```bash
    # Install main library dependencies
    pnpm install
-   
+
    # Install demo website dependencies
    cd website
    pnpm install
