@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ender_romantice/vue-grab": "^1.1.1",
+    "@ender_romantice/vue-grab": "^1.2.0",
     "unocss": "^66.5.4",
     "vue": "^3.5.22"
   },

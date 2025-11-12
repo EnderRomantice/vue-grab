@@ -6,6 +6,14 @@ interface Options {
     enabled?: boolean;
     hotkey?: Hotkey | Hotkey[];
     keyHoldDuration?: number;
+    highlightColor?: string;
+    labelTextColor?: string;
+    showTagHint?: boolean;
+    filter?: {
+        ignoreSelectors?: string[];
+        ignoreTags?: string[];
+        skipCommonComponents?: boolean;
+    };
 }
 declare const init: (options?: Options) => () => void;
 

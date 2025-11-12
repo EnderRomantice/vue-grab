@@ -21,8 +21,48 @@ var copyTextToClipboard = async (text) => {
   }
 };
 
+// src/modules/config.ts
+var DEFAULT_COLOR = "#77E1D5";
+var DEFAULT_LABEL_TEXT = "#222";
+var DEFAULT_BOX_SHADOW = "0 0 0 1px rgba(143, 253, 218, 0.3), 0 0 0 6px rgba(119,225,213,0.1)";
+var runtimeConfig = {
+  highlight: {
+    color: DEFAULT_COLOR,
+    labelTextColor: DEFAULT_LABEL_TEXT,
+    boxShadow: DEFAULT_BOX_SHADOW
+  },
+  filter: {
+    ignoreSelectors: [],
+    ignoreTags: [],
+    skipCommonComponents: false
+  },
+  showTagHint: true
+};
+var getConfig = () => runtimeConfig;
+var updateConfig = (partial) => {
+  runtimeConfig = {
+    ...runtimeConfig,
+    ...partial,
+    highlight: { ...runtimeConfig.highlight, ...partial.highlight ?? {} },
+    filter: { ...runtimeConfig.filter, ...partial.filter ?? {} }
+  };
+};
+var DEFAULTS = {
+  DEFAULT_COLOR,
+  DEFAULT_LABEL_TEXT,
+  DEFAULT_BOX_SHADOW
+};
+
 // src/modules/overlay.ts
 var ATTRIBUTE_NAME = "data-vue-grab";
+var hexToRGBA = (hex, alpha) => {
+  const normalized = hex.replace("#", "");
+  const full = normalized.length === 3 ? normalized.split("").map((c) => c + c).join("") : normalized;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${Math.max(0, Math.min(1, alpha))})`;
+};
 var mountRoot = () => {
   const mountedHost = document.querySelector(`[${ATTRIBUTE_NAME}]`);
   if (mountedHost) {
@@ -46,19 +86,26 @@ var ensureOverlay = () => {
   const root = mountRoot();
   let box = root.querySelector(".vg-box");
   if (!box) {
+    const { highlight } = getConfig();
+    const borderColor = highlight.color ?? DEFAULTS.DEFAULT_COLOR;
+    const boxShadow = highlight.boxShadow ?? DEFAULTS.DEFAULT_BOX_SHADOW;
     box = document.createElement("div");
     box.className = "vg-box";
     box.setAttribute(ATTRIBUTE_NAME, "true");
     box.style.position = "fixed";
     box.style.pointerEvents = "none";
-    box.style.border = "2px solid #77E1D5";
+    box.style.border = `2px solid ${borderColor}`;
     box.style.borderRadius = "6px";
-    box.style.boxShadow = "0 0 0 1px rgba(119,225,213,0.3), 0 0 0 6px rgba(119,225,213,0.1)";
+    box.style.boxShadow = boxShadow;
+    box.style.background = hexToRGBA(borderColor, 0.12);
     box.style.zIndex = "2147483647";
     root.appendChild(box);
   }
   let label = root.querySelector(".vg-label");
   if (!label) {
+    const { highlight } = getConfig();
+    const bg = highlight.color ?? DEFAULTS.DEFAULT_COLOR;
+    const textColor = highlight.labelTextColor ?? DEFAULTS.DEFAULT_LABEL_TEXT;
     label = document.createElement("div");
     label.className = "vg-label";
     label.setAttribute(ATTRIBUTE_NAME, "true");
@@ -66,8 +113,8 @@ var ensureOverlay = () => {
     label.style.padding = "2px 6px";
     label.style.fontFamily = "system-ui, sans-serif";
     label.style.fontSize = "11px";
-    label.style.color = "#222";
-    label.style.background = "#77E1D5";
+    label.style.color = textColor;
+    label.style.background = bg;
     label.style.borderRadius = "4px";
     label.style.boxShadow = "0 1px 4px rgba(0,0,0,0.12)";
     label.style.zIndex = "2147483647";
@@ -81,17 +128,23 @@ var hideOverlay = () => {
   root.querySelector(".vg-label")?.remove();
 };
 var renderOverlay = (rect, text) => {
+  const { showTagHint } = getConfig();
   const { box, label } = ensureOverlay();
   if (!box || !label) return;
   box.style.left = `${rect.x}px`;
   box.style.top = `${rect.y}px`;
   box.style.width = `${rect.width}px`;
   box.style.height = `${rect.height}px`;
-  const labelX = rect.x;
-  const labelY = Math.max(8, rect.y - 24);
-  label.style.left = `${labelX}px`;
-  label.style.top = `${labelY}px`;
-  label.textContent = text ?? "VueGrab";
+  if (showTagHint) {
+    const labelX = rect.x;
+    const labelY = Math.max(8, rect.y - 24);
+    label.style.left = `${labelX}px`;
+    label.style.top = `${labelY}px`;
+    label.textContent = text ?? "VueGrab";
+    label.style.display = "block";
+  } else {
+    label.style.display = "none";
+  }
 };
 var showToast = (messageHTML, duration = 1600) => {
   const root = mountRoot();
@@ -174,8 +227,31 @@ var getLocatorData = (el) => {
   };
 };
 var getElementAtMouse = (x, y) => {
-  const el = document.elementFromPoint(x, y);
-  return el instanceof Element ? el : null;
+  let el = document.elementFromPoint(x, y);
+  if (!(el instanceof Element)) return null;
+  const cfg = getConfig();
+  const ignoreTags = (cfg.filter.ignoreTags ?? []).map((t) => t.toLowerCase());
+  const commonTags = ["header", "nav", "footer", "aside"];
+  const shouldIgnore = (node) => {
+    const tag = node.tagName.toLowerCase();
+    if (ignoreTags.includes(tag)) return true;
+    if (cfg.filter.skipCommonComponents && commonTags.includes(tag)) return true;
+    const selectors = cfg.filter.ignoreSelectors ?? [];
+    if (selectors.length) {
+      try {
+        for (const sel of selectors) {
+          if (sel && node.matches && node.matches(sel)) return true;
+        }
+      } catch {
+      }
+    }
+    return false;
+  };
+  let cursor = el;
+  while (cursor && shouldIgnore(cursor)) {
+    cursor = cursor.parentElement;
+  }
+  return cursor;
 };
 var getRect = (el) => {
   const r = el.getBoundingClientRect();
@@ -267,6 +343,18 @@ var init = (options = {}) => {
     enabled: options.enabled ?? true,
     keyHoldDuration: options.keyHoldDuration ?? 500
   };
+  updateConfig({
+    highlight: {
+      color: options.highlightColor,
+      labelTextColor: options.labelTextColor
+    },
+    filter: {
+      ignoreSelectors: options.filter?.ignoreSelectors,
+      ignoreTags: options.filter?.ignoreTags,
+      skipCommonComponents: options.filter?.skipCommonComponents
+    },
+    showTagHint: options.showTagHint ?? true
+  });
   try {
     activeCleanup?.();
   } catch {
