@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_图层_1" data-name="图层 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37.07 36">
+  <defs>
+    <style>
+      .cls-1 {
+        font-family: Arial-BoldMT, Arial;
+        font-size: 3px;
+        font-weight: 700;
+      }
+
+      .cls-1, .cls-2, .cls-3 {
+        fill: #fff;
+      }
+
+      .cls-4 {
+        fill: #41b883;
+      }
+
+      .cls-4, .cls-5, .cls-6, .cls-3 {
+        stroke-width: 0px;
+      }
+
+      .cls-2 {
+        font-family: ArialMT, Arial;
+        font-size: 1px;
+      }
+
+      .cls-7 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-5 {
+        fill: #35495e;
+      }
+
+      .cls-8 {
+        letter-spacing: 0em;
+      }
+
+      .cls-6 {
+        fill: #45967d;
+      }
+    </style>
+  </defs>
+  <rect class="cls-6" x="4.05" y="8.45" width="28.97" height="19.11" rx=".69" ry=".69"/>
+  <text class="cls-1" transform="translate(5.28 11.74)"><tspan x="0" y="0">Grab</tspan></text>
+  <g id="_抓取" data-name="抓取">
+    <g id="Vue">
+      <path class="cls-4" d="M29.24,22.3l1.73-1-.04,9.96-8.63-4.98,3.31-1.91,2.01,1.15v-2.31s1.6-.92,1.6-.92Z"/>
+      <path class="cls-5" d="M24.02,25.3l5.21,3v-6s-1.59.92-1.59.92v2.31s-2.01-1.15-2.01-1.15l-1.6.92Z"/>
+    </g>
+    <path id="_41B883" data-name="41B883" class="cls-5" d="M25.28,24.02c-.1.06-.22.07-.34.04h0s-.99-.31-1.62-.48c-.63-.17-1.71-.41-1.72-.42h0c-.23-.06-.43-.21-.54-.42s-.15-.45-.08-.68c.12-.41.51-.68.94-.63l1.09-.07-2.33-2.28c-.14-.13-.23-.31-.26-.5-.03-.19,0-.38.09-.55.13-.25.35-.42.61-.47.25-.05.52.03.74.21l.9.78-1.03-1.81c-.23-.41-.09-.93.32-1.16.19-.11.42-.14.64-.08.22.06.4.19.51.39h0s.9,1.54.9,1.54l-.27-1.23h0c-.05-.27.03-.53.2-.73s.43-.31.69-.3c.2,0,.39.08.54.21s.25.31.29.5l.28,1.42.14-.69h0c.06-.24.19-.43.36-.55.18-.12.39-.16.62-.13.45.07.7.35.73.8h0s0,.03,0,.03c-.05.84-.09,2.19-.03,2.49.09.43.36,1.54.37,1.55h0s.25,1.2.25,1.2h0c.01.19-.08.35-.22.44l-2.77,1.59s0,0,0,0Z"/>
+  </g>
+  <rect class="cls-3" x="5.42" y="14.68" width="11.02" height=".49"/>
+  <rect class="cls-3" x="5.42" y="16.14" width="9.34" height=".49"/>
+  <rect class="cls-3" x="5.42" y="22.04" width="9.34" height=".49"/>
+  <rect class="cls-3" x="5.42" y="23.58" width="7.36" height=".49"/>
+  <rect class="cls-3" x="5.42" y="17.59" width="9.34" height="3.41"/>
+  <text class="cls-2" transform="translate(5.54 13.44)"><tspan x="0" y="0">Responsive </tspan><tspan class="cls-7" x="5.5" y="0">W</tspan><tspan class="cls-8" x="6.43" y="0">eb Content Scraping</tspan></text>
+</svg>
