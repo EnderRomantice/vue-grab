@@ -225,7 +225,7 @@ Path: html > body > div#example.card
 
 ## License
 
-MIT License
+The MIT License
 
 ## Acknowledgments
 
