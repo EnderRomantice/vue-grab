@@ -226,4 +226,4 @@ MIT
 
 ## 致謝
 
-靈感來源於 [React Grab](https://github.com/aidenybai/react-grab) 專案。
+靈感來源於 [React Grab](https://github.com/aidenybai/react-grab) 專案。感謝 Vue 生態系統社群提供的技術支援和組件設計想法。
