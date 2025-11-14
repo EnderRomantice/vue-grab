@@ -1,6 +1,6 @@
 # Vue Grab
 
-> Language: English | [中文](README.zh-CN.md)
+> Language: English | [简体中文](README.zh-CN.md) | [繁体中文](README.zh-TW.md)
 
 <img src="./public/vue-grab.svg" width="400" height="400" alt="Vue Grab Logo">
 
