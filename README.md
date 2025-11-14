@@ -230,3 +230,4 @@ The MIT License
 ## Acknowledgments
 
 Inspired by the [React Grab](https://github.com/aidenybai/react-grab) project.
+Thanks to the Vue ecosystem community for providing technical support and component design ideas.
