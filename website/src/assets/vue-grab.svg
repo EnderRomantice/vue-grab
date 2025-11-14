@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_图层_2" data-name="图层 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 37.07 36">
+  <defs>
+    <style>
+      .cls-1 {
+        font-family: Arial-BoldMT, Arial;
+        font-size: 3px;
+        font-weight: 700;
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4 {
+        fill: #fff;
+      }
+
+      .cls-5 {
+        fill: #41b883;
+      }
+
+      .cls-5, .cls-6, .cls-7, .cls-8, .cls-4 {
+        stroke-width: 0px;
+      }
+
+      .cls-2, .cls-9 {
+        font-family: ArialMT, Arial;
+        font-size: 1px;
+      }
+
+      .cls-6 {
+        fill: #90e0c6;
+      }
+
+      .cls-10 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-7 {
+        fill: #35495e;
+      }
+
+      .cls-11 {
+        letter-spacing: -.02em;
+      }
+
+      .cls-12 {
+        letter-spacing: 0em;
+      }
+
+      .cls-3 {
+        stroke: #35495e;
+        stroke-miterlimit: 10;
+        stroke-width: .15px;
+      }
+
+      .cls-8 {
+        fill: #45967d;
+      }
+
+      .cls-9 {
+        fill: #000;
+      }
+    </style>
+  </defs>
+  <rect class="cls-8" x="4.73" y="7.41" width="28.97" height="19.11" rx=".69" ry=".69"/>
+  <text class="cls-1" transform="translate(5.97 10.71)"><tspan x="0" y="0">Grab</tspan></text>
+  <g id="Vue">
+    <path class="cls-5" d="M31.56,21.38h2s-5,8.62-5,8.62l-5-8.62h3.82s1.17,2,1.17,2l1.15-2h1.85Z"/>
+    <path class="cls-7" d="M25.54,21.38l3.02,5.2,3-5.2h-1.85s-1.15,2-1.15,2l-1.17-2h-1.85Z"/>
+  </g>
+  <rect class="cls-4" x="6.11" y="13.65" width="11.02" height=".49"/>
+  <rect class="cls-4" x="6.11" y="15.1" width="9.34" height=".49"/>
+  <rect class="cls-4" x="6.11" y="21.01" width="9.34" height=".49"/>
+  <rect class="cls-4" x="6.11" y="22.55" width="7.36" height=".49"/>
+  <rect class="cls-3" x="6.11" y="16.56" width="9.34" height="3.41"/>
+  <text class="cls-2" transform="translate(6.23 12.41)"><tspan x="0" y="0">Responsive </tspan><tspan class="cls-10" x="5.5" y="0">W</tspan><tspan class="cls-12" x="6.43" y="0">eb Content Scraping</tspan></text>
+  <path id="_41B883" data-name="41B883" class="cls-7" d="M15.91,20.77s-.09.03-.14.02h0s-.4-.13-.66-.2c-.26-.07-.69-.17-.7-.17h0c-.09-.03-.17-.09-.22-.17s-.06-.18-.03-.28c.05-.17.21-.27.38-.26l.44-.03-.95-.93c-.06-.05-.09-.12-.1-.2-.01-.08,0-.15.04-.22.05-.1.14-.17.25-.19.1-.02.21.01.3.09l.37.32-.42-.74c-.09-.17-.04-.38.13-.47.08-.04.17-.06.26-.03.09.02.16.08.21.16h0s.37.63.37.63l-.11-.5h0c-.02-.11.01-.22.08-.3s.17-.13.28-.12c.08,0,.16.03.22.09s.1.12.12.2l.11.58.06-.28h0c.02-.1.08-.17.15-.22.07-.05.16-.07.25-.05.18.03.29.14.3.32h0s0,.01,0,.01c-.02.34-.04.89-.01,1.01.04.17.15.63.15.63h0s.1.49.1.49h0c0,.08-.03.14-.09.18l-1.13.65s0,0,0,0Z"/>
+  <g id="_信息" data-name="信息">
+    <rect class="cls-6" x="16.64" y="23.82" width="6.32" height="2.15" rx="1.07" ry="1.07"/>
+    <text class="cls-9" transform="translate(17.63 25.19)"><tspan x="0" y="0">C</tspan><tspan class="cls-11" x=".72" y="0">P</tspan><tspan class="cls-12" x="1.37" y="0" xml:space="preserve"> &lt;img&gt;</tspan></text>
+  </g>
+</svg>
