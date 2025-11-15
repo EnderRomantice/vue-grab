@@ -8,9 +8,7 @@
 
 ## 這個專案是怎麼來的？
 
-我在刷推特的時候發現了 React Grab 這個專案，覺得很有趣，我認為 Vue 也需要這個，所以我建立了這個倉庫。
-
-[React Grab 專案地址](https://github.com/aidenybai/react-grab)
+我在刷推特的時候發現了 [React Grab](https://github.com/aidenybai/react-grab) 這個專案，覺得很有趣，我認為 Vue 也需要這個，所以我建立了這個倉庫。
 
 ## 專案簡介
 
