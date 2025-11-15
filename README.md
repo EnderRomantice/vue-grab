@@ -8,9 +8,7 @@ A Vue 3 utility library that lets you easily grab any element on the page and co
 
 ## How did this project start?
 
-I came across the React Grab project on Twitter. It was fun and useful, and I felt Vue needed the same thing — so I created this repo.
-
-[React Grab](https://github.com/aidenybai/react-grab)
+I came across the [React Grab](https://github.com/aidenybai/react-grab) project on Twitter. It was fun and useful, and I felt Vue needed the same thing — so I created this repo.
 
 ## Introduction
 
