@@ -9,6 +9,7 @@ interface Options {
     highlightColor?: string;
     labelTextColor?: string;
     showTagHint?: boolean;
+    includeLocatorTag?: boolean;
     filter?: {
         ignoreSelectors?: string[];
         ignoreTags?: string[];

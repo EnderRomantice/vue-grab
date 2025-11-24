@@ -37,7 +37,8 @@ var VueGrab = (function (exports) {
       ignoreTags: [],
       skipCommonComponents: false
     },
-    showTagHint: true
+    showTagHint: true,
+    includeLocatorTag: true
   };
   var getConfig = () => runtimeConfig;
   var updateConfig = (partial) => {
@@ -236,12 +237,14 @@ Files: ${files.join(" > ")}` : "";
     const shouldIgnore = (node) => {
       const tag = node.tagName.toLowerCase();
       if (ignoreTags.includes(tag)) return true;
-      if (cfg.filter.skipCommonComponents && commonTags.includes(tag)) return true;
+      if (cfg.filter.skipCommonComponents && commonTags.includes(tag))
+        return true;
       const selectors = cfg.filter.ignoreSelectors ?? [];
       if (selectors.length) {
         try {
           for (const sel of selectors) {
-            if (sel && node.matches && node.matches(sel)) return true;
+            if (sel && node.matches && node.matches(sel))
+              return true;
           }
         } catch {
         }
@@ -290,7 +293,9 @@ Path: ${getCSSPath(el)}`);
       const tag = ancestors[i].tagName.toLowerCase();
       const id = ancestors[i].id;
       const cls = ancestors[i].className;
-      lines.push(indent2 + `<${tag}${id ? `#${id}` : ""}${cls ? ` class="${cls}"` : ""}>`);
+      lines.push(
+        indent2 + `<${tag}${id ? `#${id}` : ""}${cls ? ` class="${cls}"` : ""}>`
+      );
     }
     const text = (el.textContent || "").trim().replace(/\s+/g, " ");
     const truncated = text.length > 60 ? text.slice(0, 60) + "..." : text;
@@ -354,7 +359,8 @@ Path: ${getCSSPath(el)}`);
         ignoreTags: options.filter?.ignoreTags,
         skipCommonComponents: options.filter?.skipCommonComponents
       },
-      showTagHint: options.showTagHint ?? true
+      showTagHint: options.showTagHint ?? true,
+      includeLocatorTag: options.includeLocatorTag ?? true
     });
     try {
       activeCleanup?.();
@@ -363,15 +369,30 @@ Path: ${getCSSPath(el)}`);
     let mouseX = -1e3;
     let mouseY = -1e3;
     let hovered = null;
+    let rafPending = false;
+    let rafId = 0;
+    let lastRenderKey = "";
     const onMouseMove = (e) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
-      const el = getElementAtMouse(mouseX, mouseY);
-      hovered = el;
-      if (el && isComboPressed(resolved.hotkey, resolved.keyHoldDuration)) {
-        renderOverlay(getRect(el), el.tagName.toLowerCase());
-      } else {
-        hideOverlay();
+      if (!rafPending) {
+        rafPending = true;
+        rafId = requestAnimationFrame(() => {
+          rafPending = false;
+          const el = getElementAtMouse(mouseX, mouseY);
+          hovered = el;
+          if (el && isComboPressed(resolved.hotkey, resolved.keyHoldDuration)) {
+            const rect = getRect(el);
+            const key = `${rect.x}|${rect.y}|${rect.width}|${rect.height}|${el.tagName}`;
+            if (key !== lastRenderKey) {
+              lastRenderKey = key;
+              renderOverlay(rect, el.tagName.toLowerCase());
+            }
+          } else {
+            lastRenderKey = "";
+            hideOverlay();
+          }
+        });
       }
     };
     const onClick = async (e) => {
@@ -383,15 +404,18 @@ Path: ${getCSSPath(el)}`);
         const htmlSnippet = getHTMLSnippet(hovered);
         const locator = getLocatorData(hovered);
         const locatorJSON = JSON.stringify(locator, null, 2);
-        const combined = `
+        const cfg = getConfig();
+        const locatorBlock = `
 
 <vue_grab_locator>
 ${locatorJSON}
-</vue_grab_locator>
+</vue_grab_locator>`;
+        const refBlock = `
 
 <referenced_element>
 ${htmlSnippet}
 </referenced_element>`;
+        const combined = `${cfg.includeLocatorTag ? locatorBlock : ""}${refBlock}`;
         await copyTextToClipboard(combined);
         hideOverlay();
         const tag = hovered.tagName.toLowerCase();
@@ -421,6 +445,7 @@ ${htmlSnippet}
       window.removeEventListener("click", onClick, true);
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("keyup", onKeyUp);
+      if (rafId) cancelAnimationFrame(rafId);
       hideOverlay();
     };
     activeCleanup = cleanup;

@@ -1,7 +1,7 @@
 import { copyTextToClipboard } from "./modules/clipboard";
 import { hideOverlay, renderOverlay, showToast } from "./modules/overlay";
 import { getElementAtMouse, getRect, getHTMLSnippet, getLocatorData } from "./modules/dom";
-import { updateConfig } from "./modules/config";
+import { updateConfig, getConfig } from "./modules/config";
 import {
   normalizeKey,
   getDefaultHotkey,
@@ -21,6 +21,7 @@ export interface Options {
   highlightColor?: string;
   labelTextColor?: string;
   showTagHint?: boolean;
+  includeLocatorTag?: boolean;
   filter?: {
     ignoreSelectors?: string[];
     ignoreTags?: string[];
@@ -52,6 +53,7 @@ export const init = (options: Options = {}) => {
       skipCommonComponents: options.filter?.skipCommonComponents,
     },
     showTagHint: options.showTagHint ?? true,
+    includeLocatorTag: options.includeLocatorTag ?? true,
   });
 
   // If already initialized, clean up previous listeners to avoid duplicates
@@ -62,16 +64,31 @@ export const init = (options: Options = {}) => {
   let mouseX = -1000;
   let mouseY = -1000;
   let hovered: Element | null = null;
+  let rafPending = false;
+  let rafId = 0;
+  let lastRenderKey = "";
 
   const onMouseMove = (e: MouseEvent) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-    const el = getElementAtMouse(mouseX, mouseY);
-    hovered = el;
-    if (el && isComboPressed(resolved.hotkey!, resolved.keyHoldDuration)) {
-      renderOverlay(getRect(el), el.tagName.toLowerCase());
-    } else {
-      hideOverlay();
+    if (!rafPending) {
+      rafPending = true;
+      rafId = requestAnimationFrame(() => {
+        rafPending = false;
+        const el = getElementAtMouse(mouseX, mouseY);
+        hovered = el;
+        if (el && isComboPressed(resolved.hotkey!, resolved.keyHoldDuration)) {
+          const rect = getRect(el);
+          const key = `${rect.x}|${rect.y}|${rect.width}|${rect.height}|${el.tagName}`;
+          if (key !== lastRenderKey) {
+            lastRenderKey = key;
+            renderOverlay(rect, el.tagName.toLowerCase());
+          }
+        } else {
+          lastRenderKey = "";
+          hideOverlay();
+        }
+      });
     }
   };
 
@@ -84,7 +101,10 @@ export const init = (options: Options = {}) => {
       const htmlSnippet = getHTMLSnippet(hovered);
       const locator = getLocatorData(hovered);
       const locatorJSON = JSON.stringify(locator, null, 2);
-      const combined = `\n\n<vue_grab_locator>\n${locatorJSON}\n</vue_grab_locator>\n\n<referenced_element>\n${htmlSnippet}\n</referenced_element>`;
+      const cfg = getConfig();
+      const locatorBlock = `\n\n<vue_grab_locator>\n${locatorJSON}\n</vue_grab_locator>`;
+      const refBlock = `\n\n<referenced_element>\n${htmlSnippet}\n</referenced_element>`;
+      const combined = `${cfg.includeLocatorTag ? locatorBlock : ""}${refBlock}`;
       await copyTextToClipboard(combined);
       hideOverlay();
       const tag = hovered.tagName.toLowerCase();
@@ -116,6 +136,7 @@ export const init = (options: Options = {}) => {
     window.removeEventListener("click", onClick, true);
     document.removeEventListener("keydown", onKeyDown);
     document.removeEventListener("keyup", onKeyUp);
+    if (rafId) cancelAnimationFrame(rafId);
     hideOverlay();
   };
   activeCleanup = cleanup;

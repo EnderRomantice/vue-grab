@@ -19,7 +19,7 @@
 - CSS 选择器路径
 - 元素文本内容
 
-这些信息会被格式化后复制到剪贴板，方便粘贴到 AI 工具（如 ChatGPT、Cursor 等）中进行讨论和分析。
+这些信息会被格式化后复制到剪贴板，方便粘贴到 AI 工具（如 ChatGPT、Cursor 等）中进行讨论和分析。可按需隐藏 `<vue_grab_locator>` 段，仅保留引用元素片段。
 
 ## 功能特性
 
@@ -31,6 +31,7 @@
 - **高亮可配置**：可自定义高亮颜色和标签文字颜色
 - **元素过滤**：可忽略指定选择器/标签，或跳过常见布局组件
 - **标签提示开关**：可开关悬浮标签提示
+- **复制内容开关**：可选择是否包含 `<vue_grab_locator>` 段
 
 ## 快速开始
 
@@ -102,10 +103,10 @@ init({
   enabled: true,
   hotkey: 'c', // 或 ['c', 'v'] 支持多个快捷键
   keyHoldDuration: 500, // 按键持续时间（毫秒）
-  // 新增的 UI/行为配置
   highlightColor: '#2563EB', // 边框 + 标签背景色
   labelTextColor: '#ffffff', // 标签文字颜色
   showTagHint: true,         // 是否显示悬浮标签
+  includeLocatorTag: true,   // 是否包含定位标签段
   filter: {
     ignoreSelectors: ['.nav', 'header'], // 需要忽略的选择器
     ignoreTags: ['svg'],                  // 需要忽略的标签名
@@ -134,6 +135,8 @@ init({
   - 标签文字颜色
 - showTagHint: boolean
   - 是否显示悬浮的标签提示
+- includeLocatorTag: boolean
+  - 是否在复制内容中包含 `<vue_grab_locator>` 段（设为 false 时仅保留 `<referenced_element>`）
 - filter.ignoreSelectors: string[]
   - 需要忽略的 CSS 选择器（命中元素会被跳过，并继续向上寻找父元素）
 - filter.ignoreTags: string[]
@@ -201,6 +204,20 @@ pnpm dev
 }
 </vue_grab_locator>
 
+<referenced_element>
+Vue: App > Card
+Path: html > body > div#example.card
+
+  <html>
+    <body>
+      <div#example class="card highlight">
+        示例文本内容...
+</referenced_element>
+```
+
+将 `includeLocatorTag` 设为 `false` 时，仅会复制：
+
+```
 <referenced_element>
 Vue: App > Card
 Path: html > body > div#example.card

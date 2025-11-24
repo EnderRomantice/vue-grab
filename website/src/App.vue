@@ -1,4 +1,31 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ref, watch, onMounted } from "vue";
+import { init } from "@ender_romantice/vue-grab";
+
+const includeLocatorTag = ref(true);
+
+const applyConfig = () => {
+  init({
+    enabled: true,
+    hotkey: ["c", "v"],
+    keyHoldDuration: 500,
+    includeLocatorTag: includeLocatorTag.value,
+    adapter: {
+      open: (text: string) => {
+        console.log("[demo] JSON:", text);
+      },
+    },
+  });
+};
+
+onMounted(() => {
+  applyConfig();
+});
+
+watch(includeLocatorTag, () => {
+  applyConfig();
+});
+</script>
 
 <template>
     <main
@@ -22,6 +49,10 @@
                 <span class="pixel-card inline-block px-2 py-1">⌘ + c</span>),
                 then click to copy the element info.
             </p>
+            <div class="pixel-card inline-flex items-center gap-3">
+                <span class="text-vueNavy">Include locator tag: <strong>{{ includeLocatorTag ? 'ON' : 'OFF' }}</strong></span>
+                <button class="pixel-btn" @click="includeLocatorTag = !includeLocatorTag">Toggle</button>
+            </div>
         </div>
 
         <section

@@ -14,6 +14,7 @@ export type RuntimeConfig = {
   highlight: HighlightConfig;
   filter: FilterConfig;
   showTagHint: boolean;
+  includeLocatorTag: boolean;
 };
 
 const DEFAULT_COLOR = "#77E1D5";
@@ -32,6 +33,7 @@ let runtimeConfig: RuntimeConfig = {
     skipCommonComponents: false,
   },
   showTagHint: true,
+  includeLocatorTag: true,
 };
 
 export const getConfig = () => runtimeConfig;

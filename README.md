@@ -19,7 +19,7 @@ I came across the [React Grab](https://github.com/aidenybai/react-grab) project 
 - CSS selector path
 - Element text content
 
-This information is formatted and copied to the clipboard, ready to paste into AI tools (like ChatGPT, Cursor, etc.) for discussion and analysis.
+This information is formatted and copied to the clipboard, ready to paste into AI tools (like ChatGPT, Cursor, etc.) for discussion and analysis. You can optionally hide the `<vue_grab_locator>` block and keep only the referenced element snippet.
 
 ## Features
 
@@ -31,6 +31,7 @@ This information is formatted and copied to the clipboard, ready to paste into A
 - **Configurable highlight**: Customize highlight color and label text color
 - **Element filtering**: Ignore specific selectors/tags or skip common layout components
 - **Tag hint toggle**: Enable/disable the floating tag hint over the target
+- **Copy content control**: Choose whether to include the `<vue_grab_locator>` block
 
 ## Quick Start
 
@@ -106,6 +107,7 @@ init({
   highlightColor: '#2563EB', // border + label background color
   labelTextColor: '#ffffff', // label text color
   showTagHint: true,         // toggle tag hint display
+  includeLocatorTag: true,   // include the locator block in copied content
   filter: {
     ignoreSelectors: ['.nav', 'header'], // selectors to ignore
     ignoreTags: ['svg'],                  // tag names to ignore
@@ -134,6 +136,8 @@ init({
   - Text color used in the label
 - showTagHint: boolean
   - Show/hide the floating tag label while hovering
+- includeLocatorTag: boolean
+  - Whether to include the `<vue_grab_locator>` block in the copied content (set to false to keep only `<referenced_element>`)
 - filter.ignoreSelectors: string[]
   - CSS selectors to ignore (elements matching these will be skipped; the search continues up the DOM)
 - filter.ignoreTags: string[]
@@ -213,6 +217,20 @@ Path: html > body > div#example.card
 
 
 
+```
+
+When `includeLocatorTag` is `false`, only the following is copied:
+
+```
+<referenced_element>
+Vue: App > Card
+Path: html > body > div#example.card
+
+  <html>
+    <body>
+      <div#example class="card highlight">
+        Example text content...
+</referenced_element>
 ```
 
 ## Important Notes

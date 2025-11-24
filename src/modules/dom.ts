@@ -6,7 +6,7 @@ type VueComponentInfo = { name?: string; file?: string };
 const getVueComponentChain = (el: Element): VueComponentInfo[] => {
   const chain: VueComponentInfo[] = [];
   let comp: any = (el as any).__vueParentComponent;
-  // 如果当前元素没有绑定组件，尝试向上寻找最近的父元素
+
   let cursor: Element | null = el;
   while (!comp && cursor?.parentElement) {
     cursor = cursor.parentElement;
@@ -62,12 +62,18 @@ export const getElementAtMouse = (x: number, y: number): Element | null => {
   const shouldIgnore = (node: Element) => {
     const tag = node.tagName.toLowerCase();
     if (ignoreTags.includes(tag)) return true;
-    if (cfg.filter.skipCommonComponents && commonTags.includes(tag)) return true;
+    if (cfg.filter.skipCommonComponents && commonTags.includes(tag))
+      return true;
     const selectors = cfg.filter.ignoreSelectors ?? [];
     if (selectors.length) {
       try {
         for (const sel of selectors) {
-          if (sel && (node as HTMLElement).matches && (node as HTMLElement).matches(sel)) return true;
+          if (
+            sel &&
+            (node as HTMLElement).matches &&
+            (node as HTMLElement).matches(sel)
+          )
+            return true;
         }
       } catch {}
     }
@@ -117,7 +123,9 @@ export const getHTMLSnippet = (el: Element) => {
     const tag = ancestors[i].tagName.toLowerCase();
     const id = (ancestors[i] as HTMLElement).id;
     const cls = (ancestors[i] as HTMLElement).className;
-    lines.push(indent + `<${tag}${id ? `#${id}` : ""}${cls ? ` class=\"${cls}\"` : ""}>`);
+    lines.push(
+      indent + `<${tag}${id ? `#${id}` : ""}${cls ? ` class=\"${cls}\"` : ""}>`,
+    );
   }
   const text = (el.textContent || "").trim().replace(/\s+/g, " ");
   const truncated = text.length > 60 ? text.slice(0, 60) + "..." : text;
