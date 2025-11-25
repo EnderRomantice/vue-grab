@@ -43,18 +43,21 @@ onMounted(() => {
 <template>
   <div class="relative">
     <div class="absolute left-1/2 top-0 -translate-x-1/2 w-[2px] bg-vueNavy h-full"></div>
-    <div class="space-y-8">
-      <TimelineItem
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div
         v-for="(it,i) in items"
         :key="i"
         class="timeline-item"
         :data-i="i"
-        :date="it.date"
-        :title="it.title"
-        :desc="it.desc"
-        :align="i % 2 === 0 ? 'left' : 'right'"
-        :visible="!!visible[i]"
-      />
+        :class="i % 2 === 0 ? 'md:col-start-1 flex justify-end pr-6' : 'md:col-start-2 flex justify-start pl-6'"
+      >
+        <TimelineItem
+          :date="it.date"
+          :title="it.title"
+          :desc="it.desc"
+          :visible="!!visible[i]"
+        />
+      </div>
     </div>
   </div>
 </template>

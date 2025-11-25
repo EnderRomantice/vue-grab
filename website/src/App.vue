@@ -27,13 +27,13 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="retro-bg min-h-screen text-white flex flex-col overflow-x-hidden overflow-y-scroll [scrollbar-gutter:stable]">
+  <main class="retro-bg min-h-screen text-white flex flex-col overflow-x-hidden overflow-y-auto">
     <header class="w-full flex items-center px-4 py-3 sticky top-0 z-50 bg-vueBlack">
       <div class="flex items-center gap-3 flex-shrink-0" @click="currentTab = 'HOME'">
         <img src="./assets/vue-grab.svg" alt="Vue Grab" class="w-10 h-10" />
         <span class="pixel-font text-2xl tracking-widest">vue-grab</span>
       </div>
-      <nav class="ml-auto flex-1 flex flex-wrap justify-end items-center gap-2 md:gap-4 max-w-full pr-6 mr-[20px]">
+      <nav class="ml-auto flex-1 flex flex-wrap justify-end items-center gap-2 md:gap-4 max-w-full pr-6">
         <button class="pixel-tab text-xs md:text-sm min-w-[72px]" :class="currentTab==='HOME' ? 'bg-[#3aa876]' : ''" @click="currentTab='HOME'">HOME</button>
         <button class="pixel-tab text-xs md:text-sm min-w-[72px]" :class="currentTab==='ABOUT' ? 'bg-[#3aa876]' : ''" @click="currentTab='ABOUT'">ABOUT</button>
         <button class="pixel-tab text-xs md:text-sm min-w-[72px]" :class="currentTab==='BLOG' ? 'bg-[#3aa876]' : ''" @click="currentTab='BLOG'">BLOG</button>
