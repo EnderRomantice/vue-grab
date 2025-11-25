@@ -46,7 +46,7 @@ export const ensureOverlay = () => {
     box.setAttribute(ATTRIBUTE_NAME, "true");
     box.style.position = "fixed";
     box.style.pointerEvents = "none";
-    box.style.border = `2px solid ${borderColor}`;
+    box.style.border = `2px dashed ${borderColor}`;
     box.style.borderRadius = "6px";
     box.style.boxShadow = boxShadow;
     // semi-transparent fill derived from highlight color
@@ -73,23 +73,85 @@ export const ensureOverlay = () => {
     label.style.zIndex = "2147483647";
     root.appendChild(label);
   }
-  return { root, box, label };
+  let label2 = root.querySelector(".vg-label-2") as HTMLDivElement | null;
+  if (!label2) {
+    label2 = document.createElement("div");
+    label2.className = "vg-label-2";
+    label2.setAttribute(ATTRIBUTE_NAME, "true");
+    label2.style.position = "fixed";
+    label2.style.padding = "2px 6px";
+    label2.style.fontFamily = "system-ui, sans-serif";
+    label2.style.fontSize = "11px";
+    label2.style.color = "#f8fafc";
+    label2.style.background = "#35495e";
+    label2.style.borderRadius = "4px";
+    label2.style.boxShadow = "0 1px 4px rgba(0,0,0,0.12)";
+    label2.style.zIndex = "2147483647";
+    label2.style.maxWidth = "40vw";
+    label2.style.overflow = "hidden";
+    label2.style.textOverflow = "ellipsis";
+    label2.style.whiteSpace = "nowrap";
+    root.appendChild(label2);
+  }
+  let crossX = root.querySelector(".vg-crosshair-x") as HTMLDivElement | null;
+  if (!crossX) {
+    const { highlight } = getConfig();
+    const borderColor = highlight.color ?? DEFAULTS.DEFAULT_COLOR;
+    crossX = document.createElement("div");
+    crossX.className = "vg-crosshair-x";
+    crossX.setAttribute(ATTRIBUTE_NAME, "true");
+    crossX.style.position = "fixed";
+    crossX.style.pointerEvents = "none";
+    crossX.style.left = "0";
+    crossX.style.width = "100vw";
+    crossX.style.borderTop = `1px dashed ${borderColor}`;
+    crossX.style.zIndex = "2147483647";
+    root.appendChild(crossX);
+  }
+  let crossY = root.querySelector(".vg-crosshair-y") as HTMLDivElement | null;
+  if (!crossY) {
+    const { highlight } = getConfig();
+    const borderColor = highlight.color ?? DEFAULTS.DEFAULT_COLOR;
+    crossY = document.createElement("div");
+    crossY.className = "vg-crosshair-y";
+    crossY.setAttribute(ATTRIBUTE_NAME, "true");
+    crossY.style.position = "fixed";
+    crossY.style.pointerEvents = "none";
+    crossY.style.top = "0";
+    crossY.style.height = "100vh";
+    crossY.style.borderLeft = `1px dashed ${borderColor}`;
+    crossY.style.zIndex = "2147483647";
+    root.appendChild(crossY);
+  }
+  return { root, box, label, label2, crossX, crossY };
 };
 
 export const hideOverlay = () => {
   const root = mountRoot();
   root.querySelector(".vg-box")?.remove();
   root.querySelector(".vg-label")?.remove();
+  root.querySelector(".vg-label-2")?.remove();
+  root.querySelector(".vg-crosshair-x")?.remove();
+  root.querySelector(".vg-crosshair-y")?.remove();
 };
 
-export const renderOverlay = (rect: SelectionBox, text?: string) => {
+export const renderOverlay = (
+  rect: SelectionBox,
+  text?: string,
+  cursor?: { x: number; y: number },
+  secondaryText?: string,
+) => {
   const { showTagHint } = getConfig();
-  const { box, label } = ensureOverlay();
-  if (!box || !label) return;
+  const { box, label, label2, crossX, crossY } = ensureOverlay();
+  if (!box || !label || !label2) return;
   box.style.left = `${rect.x}px`;
   box.style.top = `${rect.y}px`;
   box.style.width = `${rect.width}px`;
   box.style.height = `${rect.height}px`;
+  const cx = cursor?.x ?? Math.round(rect.x + rect.width / 2);
+  const cy = cursor?.y ?? Math.round(rect.y + rect.height / 2);
+  if (crossX) crossX.style.top = `${cy}px`;
+  if (crossY) crossY.style.left = `${cx}px`;
   if (showTagHint) {
     const labelX = rect.x;
     const labelY = Math.max(8, rect.y - 24);
@@ -97,8 +159,15 @@ export const renderOverlay = (rect: SelectionBox, text?: string) => {
     label.style.top = `${labelY}px`;
     label.textContent = text ?? "VueGrab";
     label.style.display = "block";
+    label2.textContent = secondaryText ?? "";
+    label2.style.display = secondaryText ? "block" : "none";
+    const gap = 8;
+    const x2 = labelX + (label.offsetWidth || 0) + gap;
+    label2.style.left = `${x2}px`;
+    label2.style.top = `${labelY}px`;
   } else {
     label.style.display = "none";
+    label2.style.display = "none";
   }
 };
 

@@ -82,7 +82,15 @@ export const init = (options: Options = {}) => {
           const key = `${rect.x}|${rect.y}|${rect.width}|${rect.height}|${el.tagName}`;
           if (key !== lastRenderKey) {
             lastRenderKey = key;
-            renderOverlay(rect, el.tagName.toLowerCase());
+            const locator = getLocatorData(el);
+            const names = (locator.vue ?? []).map((c: any) => c?.name || "Anonymous");
+            const chain = names.length ? names.join(" > ") : "";
+            renderOverlay(
+              rect,
+              el.tagName.toLowerCase(),
+              { x: mouseX, y: mouseY },
+              chain,
+            );
           }
         } else {
           lastRenderKey = "";
@@ -118,7 +126,15 @@ export const init = (options: Options = {}) => {
     pressedKeys.add(k as Hotkey);
     lastKeyDownTimestamps.set(k, Date.now());
     if (hovered && isComboPressed(resolved.hotkey!, resolved.keyHoldDuration)) {
-      renderOverlay(getRect(hovered), hovered.tagName.toLowerCase());
+      const locator = getLocatorData(hovered);
+      const names = (locator.vue ?? []).map((c: any) => c?.name || "Anonymous");
+      const chain = names.length ? names.join(" > ") : "";
+      renderOverlay(
+        getRect(hovered),
+        hovered.tagName.toLowerCase(),
+        { x: mouseX, y: mouseY },
+        chain,
+      );
     }
   };
   const onKeyUp = (e: KeyboardEvent) => {
