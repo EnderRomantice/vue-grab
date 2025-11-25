@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import { init } from "@ender_romantice/vue-grab";
+import Home from "./pages/Home.vue";
+import About from "./pages/About.vue";
+import Blog from "./pages/Blog.vue";
 
-const includeLocatorTag = ref(true);
+const currentTab = ref<"HOME" | "ABOUT" | "BLOG">("HOME");
 
 const applyConfig = () => {
   init({
     enabled: true,
     hotkey: ["c", "v"],
     keyHoldDuration: 500,
-    includeLocatorTag: includeLocatorTag.value,
+    includeLocatorTag: true,
     adapter: {
       open: (text: string) => {
         console.log("[demo] JSON:", text);
@@ -21,74 +24,28 @@ const applyConfig = () => {
 onMounted(() => {
   applyConfig();
 });
-
-watch(includeLocatorTag, () => {
-  applyConfig();
-});
 </script>
 
 <template>
-    <main
-        class="retro-bg min-h-screen text-white flex flex-col items-center justify-center gap-6"
-    >
-        <div class="text-center space-y-3">
-            <div class="flex items-center justify-center gap-3">
-                <img
-                    src="./assets/vue-grab.svg"
-                    alt="Vue logo"
-                    class="w-20 h-20"
-                />
-                <h1 class="pixel-font text-3xl md:text-4xl tracking-widest">
-                    vue-grab
-                </h1>
-            </div>
-            <p class="text-sm md:text-base opacity-80">
-                Hover any element, hold
-                <span class="pixel-card inline-block px-2 py-1">Ctrl + C</span>
-                (macOS:
-                <span class="pixel-card inline-block px-2 py-1">⌘ + c</span>),
-                then click to copy the element info.
-            </p>
-            <div class="pixel-card inline-flex items-center gap-3">
-                <span class="text-vueNavy">Include locator tag: <strong>{{ includeLocatorTag ? 'ON' : 'OFF' }}</strong></span>
-                <button class="pixel-btn" @click="includeLocatorTag = !includeLocatorTag">Toggle</button>
-            </div>
-        </div>
+  <main class="retro-bg min-h-screen text-white flex flex-col overflow-x-hidden overflow-y-scroll [scrollbar-gutter:stable]">
+    <header class="w-full flex items-center px-4 py-3 sticky top-0 z-50 bg-vueBlack">
+      <div class="flex items-center gap-3 flex-shrink-0" @click="currentTab = 'HOME'">
+        <img src="./assets/vue-grab.svg" alt="Vue Grab" class="w-10 h-10" />
+        <span class="pixel-font text-2xl tracking-widest">vue-grab</span>
+      </div>
+      <nav class="ml-auto flex-1 flex flex-wrap justify-end items-center gap-2 md:gap-4 max-w-full pr-6 mr-[20px]">
+        <button class="pixel-tab text-xs md:text-sm min-w-[72px]" :class="currentTab==='HOME' ? 'bg-[#3aa876]' : ''" @click="currentTab='HOME'">HOME</button>
+        <button class="pixel-tab text-xs md:text-sm min-w-[72px]" :class="currentTab==='ABOUT' ? 'bg-[#3aa876]' : ''" @click="currentTab='ABOUT'">ABOUT</button>
+        <button class="pixel-tab text-xs md:text-sm min-w-[72px]" :class="currentTab==='BLOG' ? 'bg-[#3aa876]' : ''" @click="currentTab='BLOG'">BLOG</button>
+      </nav>
+    </header>
 
-        <section
-            class="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-6 w-full max-w-5xl"
-        >
-            <div class="pixel-card text-vueNavy">
-                <h2 class="pixel-font text-lg mb-2 text-vueNavy">
-                    Sample Card
-                </h2>
-                <p>This is a demo card. Try hovering and using the hotkey.</p>
-                <button class="pixel-btn mt-3">Click me</button>
-            </div>
-
-            <div class="pixel-card text-vueNavy">
-                <h2 class="pixel-font text-lg mb-2 text-vueNavy">List</h2>
-                <ul class="list-disc pl-5">
-                    <li>Item One</li>
-                    <li>Item Two</li>
-                    <li>Item Three</li>
-                </ul>
-            </div>
-
-            <div class="pixel-card text-vueNavy">
-                <h2 class="pixel-font text-lg mb-2 text-vueNavy">Form</h2>
-                <input
-                    class="border-4 border-vueNavy bg-vueWhite text-vueNavy px-2 py-1 w-[80%] mb-2"
-                    placeholder="Type something here"
-                />
-                <button class="pixel-btn">Submit</button>
-            </div>
-        </section>
-
-        <footer class="opacity-70 text-xs md:text-sm">
-            Shortcut: Windows/Linux use
-            <span class="accent-text font-bold">Ctrl + C</span>, macOS use
-            <span class="accent-text font-bold">⌘ + c</span>.
-        </footer>
-    </main>
+    <section class="flex-1 px-4 py-6 flex justify-center">
+      <div class="w-full max-w-3xl">
+        <Home v-if="currentTab==='HOME'" />
+        <About v-else-if="currentTab==='ABOUT'" />
+        <Blog v-else />
+      </div>
+    </section>
+  </main>
 </template>
