@@ -237,7 +237,7 @@ Path: html > body > div#example.card
 
 - **Component stack parsing**: Component stack parsing relies on Vue runtime internals (`__vueParentComponent`), which may behave differently across environments or Vue versions
 - **Browser compatibility**: Requires modern browser APIs (e.g., Shadow DOM, Clipboard API)
-- **Hotkey conflicts**: `Ctrl+C` is the system copy shortcut. This tool intercepts this key combination, so adjust accordingly based on your needs
+- **Hotkey conflicts**: `Ctrl+C` is the system copy shortcut. This tool intercepts this key combination, please adjust accordingly based on your needs
 
 ## License
 
