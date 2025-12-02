@@ -187,7 +187,7 @@ pnpm dev
 
 ## 📝 复制内容格式
 
-抓取的元素信息会以以下格式复制到剪贴板：
+默认情况下，抓取的内容包含**定位数据**与**引用预览**，格式如下：
 
 ```
 <vue_grab_locator>
@@ -215,7 +215,7 @@ Path: html > body > div#example.card
 </referenced_element>
 ```
 
-将 `includeLocatorTag` 设为 `false` 时，仅会复制：
+若配置 `includeLocatorTag: false`，则仅保留引用预览：
 
 ```
 <referenced_element>
