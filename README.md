@@ -4,7 +4,7 @@
 
 <img src="./public/vue-grab.svg" width="400" height="400" alt="Vue Grab Logo">
 
-[Star](https://www.star-history.com/#EnderRomantice/vue-grab&type=date&legend=top-left)
+![Star](https://www.star-history.com/#EnderRomantice/vue-grab&type=date&legend=top-left)
 
 A Vue 3 utility library that lets you easily grab any element on the page and copy its HTML snippet and Vue component stack information to the clipboard, making it convenient to use in AI tools.
 
