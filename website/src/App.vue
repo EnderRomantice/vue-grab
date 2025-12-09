@@ -77,6 +77,8 @@ const applyConfig = () => {
     init(config.value);
 };
 
+
+
 watch(() => config.value, applyConfig, { deep: true, immediate: false });
 
 onMounted(() => {
@@ -378,16 +380,7 @@ onMounted(() => {
                                 <input
                                     type="checkbox"
                                     :checked="!!config.agent"
-                                    @change="
-                                        config.agent = $event.target.checked
-                                            ? {
-                                                  type: 'opencode',
-                                                  provider: 'deepseek',
-                                                   model: 'deepseek/deepseek-reasoner',
-                                                  apiKey: envApiKey,
-                                              }
-                                            : undefined
-                                    "
+                                     @change="config.agent = $event.target && ($event.target as HTMLInputElement).checked ? { type: 'opencode', provider: 'deepseek', model: 'deepseek/deepseek-reasoner', apiKey: envApiKey } : undefined"
                                     class="w-4 h-4"
                                 />
                                 <span>Enable AI Agent (Ctrl+X to edit)</span>
