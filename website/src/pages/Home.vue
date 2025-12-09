@@ -20,8 +20,8 @@ onMounted(() => {
   <div class="space-y-5">
     <div class="fade-item-home" :data-i="0" :class="['text-center space-y-4 transition-all duration-700', visible[0] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4']">
       <img src="../assets/vue-grab.svg" alt="Vue Grab" class="w-28 h-28 mx-auto" />
-      <h1 class="pixel-font text-3xl tracking-widest text-red-500">vue-grab</h1>
-      <p class="text-lg md:text-xl opacity-80">
+      <h1 class="pixel-font text-3xl tracking-widest">vue-grab</h1>
+      <p class="text-sm md:text-base opacity-80">
         Hold <span class="pixel-card inline-block px-2 py-1">Ctrl + C</span> (macOS:
         <span class="pixel-card inline-block px-2 py-1">⌘ + c</span>) to hover and click to copy element info.
       </p>

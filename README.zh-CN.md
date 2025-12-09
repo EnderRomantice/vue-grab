@@ -33,60 +33,6 @@
 - **标签提示开关**：可开关悬浮标签提示
 - **复制内容开关**：可选择是否包含 `<vue_grab_locator>` 段
 
-## AI 集成 (Beta)
-
-Vue Grab 目前支持 **Opencode** 进行 AI 驱动的代码编辑。未来计划支持 **Claude** 和 **Cursor**。
-
-### 功能特性
-- **上下文感知编辑**：自动将选中组件的文件路径和代码上下文发送给 AI 代理。
-- **实时流式传输**：通过服务器发送事件 (SSE) 实时观看 AI 分析和修改代码。
-
-### 设置
-
-要启用 AI 代码编辑功能，您需要安装对应的后端服务包并配置您的项目启动脚本。
-
-1.  **安装后端服务包**
-
-    根据您选择的 AI 代理，安装对应的服务包。
-    
-    对于 **Opencode**:
-    ```bash
-    npm install @ender_romantice/vue-grab-opencode --save-dev
-    # 或
-    pnpm add -D @ender_romantice/vue-grab-opencode
-    ```
-
-2.  **配置启动脚本**
-
-    更新您的 `package.json`，以便在启动开发服务器时同时运行 AI 后端服务。建议使用 `concurrently` 并行运行。
-
-    ```json
-    {
-      "scripts": {
-        "dev": "vite",
-        "dev:ai": "concurrently \"npm run dev\" \"vue-grab-opencode\""
-      }
-    }
-    ```
-    > 注意：您可能需要先安装 concurrently: `npm install concurrently --save-dev`
-
-3.  **初始化配置**
-
-    在初始化 `vue-grab` 时配置代理信息：
-
-    ```javascript
-    import { init } from '@ender_romantice/vue-grab';
-
-    init({
-      agent: {
-        type: "opencode",
-        provider: "deepseek", // 服务提供商 ID
-        model: "deepseek/deepseek-v3.2", // 模型名称
-        apiKey: "your-api-key" // 您的 API Key
-      }
-    });
-    ```
-
 ## 快速开始
 
 ### 在线体验
@@ -198,6 +144,25 @@ init({
 - filter.skipCommonComponents: boolean
   - 是否跳过常见布局元素：`header`、`nav`、`footer`、`aside`
 
+## 项目结构
+
+```
+vue-grab/
+├── src/                    # 主库源代码
+│   ├── index.ts           # 入口文件
+│   └── modules/           # 功能模块
+│       ├── clipboard.ts   # 剪贴板操作
+│       ├── dom.ts         # DOM 操作和组件栈解析
+│       ├── hotkeys.ts     # 快捷键处理
+│       └── overlay.ts     # 高亮覆盖层
+├── website/               # 演示网站
+│   ├── src/
+│   │   ├── App.vue        # 演示页面
+│   │   └── main.ts        # 入口文件
+│   └── package.json
+├── dist/                  # 构建输出
+└── package.json
+```
 
 ## 开发
 

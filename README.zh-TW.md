@@ -32,19 +32,6 @@
 - **元素過濾**：可忽略指定選擇器/標籤，或跳過常見版面元件
 - **標籤提示開關**：可開關懸浮標籤提示
 
-## AI 整合 (Beta)
-
-Vue Grab 目前支援 **Opencode** 進行 AI 驅動的程式碼編輯。未來計劃支援 **Claude** 和 **Cursor**。
-
-### 功能特性
-- **上下文感知編輯**：自動將選中組件的檔案路徑和程式碼上下文發送給 AI 代理。
-- **即時串流傳輸**：透過伺服器發送事件 (SSE) 即時觀看 AI 分析和修改程式碼。
-
-### 設定
-1. 確保 `vue-grab-opencode` 套件正在運行（包含在 monorepo 中）。
-2. 配置 Opencode 鑑權（目前使用阿里雲服務商）。
-3. 選中元素，點擊「AI 編輯」（如果 UI 中可用），描述你的修改需求。
-
 ## 快速開始
 
 ### 線上體驗
@@ -104,39 +91,6 @@ pnpm add @ender_romantice/vue-grab
 yarn add @ender_romantice/vue-grab
 ```
 
-### 設定
-
-要啟用 AI 程式碼編輯功能，您需要安裝相應的後端服務並配置專案啟動。
-
-1.  **安裝後端服務**
-
-    安裝您選擇的代理程式的服務套件。
-    
-    對於 **Opencode**：
-    ```bash
-    npm install @ender_romantice/vue-grab-opencode --save-dev
-    # 或
-    pnpm add -D @ender_romantice/vue-grab-opencode
-    ```
-
-2.  **配置啟動指令碼**
-
-    更新您的 `package.json`，以便在執行開發伺服器時同時執行 AI 後端服務。我們建議使用 `concurrently` 來同時執行它們。
-
-    ```json
-    {
-      "scripts": {
-        "dev": "vite",
-        "dev:ai": "concurrently \"npm run dev\" \"vue-grab-opencode\""
-      }
-    }
-    ```
-    > 注意：您可能需要安裝 concurrently：`npm install concurrently --save-dev`
-
-目前僅支援 Opencode，未來將支援 Claude 和 Cursor。
-
-### 初始化配置
-
 ```javascript
 import { init } from '@ender_romantice/vue-grab'
 
@@ -152,19 +106,10 @@ init({
   highlightColor: '#2563EB', // 邊框 + 標籤背景色
   labelTextColor: '#ffffff', // 標籤文字顏色
   showTagHint: true,         // 是否顯示懸浮標籤
-  includeLocatorTag: true,   // 是否包含 <vue_grab_locator> 段
   filter: {
     ignoreSelectors: ['.nav', 'header'], // 需要忽略的選擇器
     ignoreTags: ['svg'],                  // 需要忽略的標籤名稱
     skipCommonComponents: true,           // 跳過 header/nav/footer/aside
-  },
-  // AI 代理配置
-  agent: {
-    type: 'opencode', // 目前支援 'opencode'
-    // 認證配置（必填）
-    provider: '您的服務提供商', // 例如 'anthropic' 或 'albb'
-    model: 'deepseek/deepseek-v3.2', // 模型名稱
-    apiKey: '您的 API 金鑰'
   },
   adapter: {
     open: (text) => {
@@ -179,7 +124,6 @@ init({
 // - keyHoldDuration 控制對 'c' 鍵的「最近按下」判定時間視窗（毫秒），用於配合組合鍵更自然地觸發。
 // - init 是冪等的：多次呼叫不會重複註冊監聽器，後一次會覆蓋前一次設定。
 // - 選擇框會使用 highlightColor 的半透明填充，以提升在不同背景下的可讀性。
-// - agent 配置項必須在 init 時提供，否則無法使用 AI 功能。
 ```
 
 ### 設定項說明
@@ -190,21 +134,12 @@ init({
   - 標籤文字顏色
 - showTagHint: boolean
   - 是否顯示懸浮的標籤提示
-- includeLocatorTag: boolean
-  - 是否包含 `<vue_grab_locator>` 段
 - filter.ignoreSelectors: string[]
   - 需要忽略的 CSS 選擇器（命中元素會被跳過，並繼續向上尋找父元素）
 - filter.ignoreTags: string[]
   - 需要忽略的標籤名稱（如 `['svg', 'canvas']`）
 - filter.skipCommonComponents: boolean
   - 是否跳過常見版面元素：`header`、`nav`、`footer`、`aside`
-- agent: object
-  - AI 代理配置
-  - type: 'opencode' (目前僅支援)
-  - provider: 服務提供商 (必填)
-  - model: 模型名稱 (必填)
-  - apiKey: API 金鑰 (必填)
-
 
 ## 專案結構
 
