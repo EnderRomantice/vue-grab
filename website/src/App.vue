@@ -13,6 +13,12 @@ const applyConfig = () => {
     hotkey: ["c", "v"],
     keyHoldDuration: 500,
     includeLocatorTag: true,
+    agent: {
+      type: "opencode", 
+      provider: "alibaba-cn", // Service provider ID
+      model: "alibaba-cn/qwen3-coder-plus", // Model name
+      apiKey: "sk-98abbd47482846ad885b27668b19dfa3" 
+    },
     adapter: {
       open: (text: string) => {
         console.log("[demo] JSON:", text);

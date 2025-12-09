@@ -6,6 +6,13 @@ interface Options {
     enabled?: boolean;
     hotkey?: Hotkey | Hotkey[];
     keyHoldDuration?: number;
+    agent?: {
+        type: "claude" | "opencode";
+        endpoint?: string;
+        provider?: string;
+        model?: string;
+        apiKey?: string;
+    };
     highlightColor?: string;
     labelTextColor?: string;
     showTagHint?: boolean;
