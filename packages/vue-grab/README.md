@@ -6,25 +6,16 @@
 
 A Vue 3 utility library that lets you easily grab any element on the page and copy its HTML snippet and Vue component stack information to the clipboard, making it convenient to use in AI tools.
 
-## Features
-
-- **Easy to use**: Hold `Ctrl+C` (macOS: `⌘+C`), move the mouse to highlight target elements, then click to grab
-- **Smart copying**: Automatically copies element HTML snippets and Vue component stack information
-- **Style isolation**: Overlay uses Shadow DOM to avoid interfering with page styles
-- **Component tracking**: Automatically parses and displays Vue component hierarchy
-- **Configurable**: Customize highlight color, label text, element filtering, and more
-- **AI Integration**: Supports Opencode for AI-powered code editing
-
-## Quick Start
+## 🚀 Quick Start
 
 ### Installation
 
-#### Method 1: CDN
+#### CDN
 ```html
 <script src="https://unpkg.com/@ender_romantice/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
 ```
 
-#### Method 2: NPM
+#### NPM
 ```bash
 npm install @ender_romantice/vue-grab
 # or
@@ -34,7 +25,6 @@ yarn add @ender_romantice/vue-grab
 ```
 
 ### Basic Usage
-
 ```javascript
 import { init } from '@ender_romantice/vue-grab'
 
@@ -42,11 +32,50 @@ import { init } from '@ender_romantice/vue-grab'
 init()
 ```
 
-### Usage Methods
-- **Method A**: Hold `Ctrl+C` (macOS: `⌘+C`), move the mouse over the target element (a highlight box will appear), then click to grab
-- **Method B**: Hold `Ctrl` (macOS: `⌘`), quickly tap `C`, then move and click the target element within 800ms
+### How to Use
+- **Copy to clipboard**: Hold `Ctrl+C` (macOS: `⌘+C`), move mouse over target element (highlight box appears), click to copy HTML and component info
+- **Quick copy**: Hold `Ctrl` (macOS: `⌘`), quickly tap `C`, then move and click target element within 800ms
+- **AI interaction**: Hold `Ctrl+X` (macOS: `⌘+X`), move mouse over target element, click to open prompt input for AI editing (requires AI integration)
 
-## Configuration
+### Quick Configuration
+```javascript
+import { init } from '@ender_romantice/vue-grab'
+
+init({
+  // UI
+  highlightColor: '#2563EB',
+  labelTextColor: '#ffffff',
+  showTagHint: true,
+  
+  // Filtering
+  filter: {
+    ignoreSelectors: ['.nav', 'header'],
+    ignoreTags: ['svg'],
+    skipCommonComponents: true,
+  },
+  
+  // AI Integration (Optional)
+  agent: {
+    type: "opencode",
+    provider: "deepseek",
+    model: "deepseek/deepseek-reasoner",
+    apiKey: "your-api-key"
+  }
+})
+```
+
+## 📚 Detailed Documentation
+
+### Features
+
+- **Easy to use**: Hold `Ctrl+C` (macOS: `⌘+C`), move the mouse to highlight target elements, then click to grab
+- **Smart copying**: Automatically copies element HTML snippets and Vue component stack information
+- **Style isolation**: Overlay uses Shadow DOM to avoid interfering with page styles
+- **Component tracking**: Automatically parses and displays Vue component hierarchy
+- **Configurable**: Customize highlight color, label text, element filtering, and more
+- **AI Integration**: Supports Opencode for AI-powered code editing
+
+### Full Configuration
 
 ```javascript
 import { init } from '@ender_romantice/vue-grab'
@@ -86,7 +115,7 @@ init({
 })
 ```
 
-### Configuration Reference
+#### Configuration Reference
 
 - `highlightColor`: string - Main accent color for the selection border and label background
 - `labelTextColor`: string - Text color used in the label
@@ -100,7 +129,7 @@ init({
 - `agent.model`: string - Model name
 - `agent.apiKey`: string - Your API key for the AI service
 
-## AI Integration Setup
+### AI Integration Setup
 
 To enable AI code editing with Opencode:
 
@@ -121,7 +150,7 @@ npm install @ender_romantice/vue-grab-opencode --save-dev
 
 3. **Configure the agent** in your `init()` call (see Configuration section above).
 
-## Copied Content Format
+### Copied Content Format
 
 Grabbed element information is copied to the clipboard in the following format:
 
@@ -153,7 +182,7 @@ Path: html > body > div#example.card
 
 When `includeLocatorTag` is `false`, only the `<referenced_element>` block is copied.
 
-## Notes
+### Notes
 
 - **Component stack parsing**: Relies on Vue runtime internals (`__vueParentComponent`), which may behave differently across environments or Vue versions
 - **Browser compatibility**: Requires modern browser APIs (e.g., Shadow DOM, Clipboard API)

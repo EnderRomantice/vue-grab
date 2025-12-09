@@ -6,32 +6,23 @@
 
 一個 Vue 3 工具庫，讓你可以輕鬆擷取頁面上的任何元素，並將其 HTML 片段和 Vue 組件堆疊資訊複製到剪貼簿，方便在 AI 工具中使用。
 
-## 功能特性
 
-- **簡單易用**：按住 `Ctrl+C`（macOS: `⌘+C`）移動滑鼠，高亮目標元素，點擊即可擷取
-- **智慧複製**：自動複製元素的 HTML 片段與 Vue 組件堆疊資訊
-- **樣式隔離**：覆蓋層使用 Shadow DOM，不影響頁面原有樣式
-- **組件追蹤**：自動解析並顯示 Vue 組件層級關係
-- **可配置**：可自訂高亮顏色、標籤文字、元素過濾等設定
-- **AI 整合**：支援 Opencode 進行 AI 驅動的程式碼編輯
 
-## 快速開始
+## 🚀 快速開始
 
-### 安裝
+### 安裝（推薦 NPM）
 
-#### 方式一：CDN
-```html
-<script src="https://unpkg.com/@ender_romantice/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
-```
+使用 NPM 安裝以獲得完整的 AI 整合功能：
 
-#### 方式二：NPM
 ```bash
-npm install @ender_romantice/vue-grab
-# 或
 pnpm add @ender_romantice/vue-grab
+# 或
+npm install @ender_romantice/vue-grab
 # 或
 yarn add @ender_romantice/vue-grab
 ```
+
+> **注意**：如果您需要使用 AI 整合功能（Opencode），必須使用 NPM 安裝。CDN 方式無法使用 AI 整合功能。
 
 ### 基本使用
 
@@ -42,11 +33,61 @@ import { init } from '@ender_romantice/vue-grab'
 init()
 ```
 
-### 使用方法
-- **方式 A**：按住 `Ctrl+C`（macOS: `⌘+C`），移動滑鼠到目標元素上（會出現高亮框），點擊即可擷取
-- **方式 B**：按住 `Ctrl`（macOS: `⌘`），快速點按 `C`，然後在 800ms 內移動滑鼠並點擊目標元素
+### 快速配置（含 AI 整合）
 
-## 配置
+```javascript
+import { init } from '@ender_romantice/vue-grab'
+
+init({
+  // UI 配置
+  highlightColor: '#2563EB',
+  labelTextColor: '#ffffff',
+  showTagHint: true,
+  
+  // 元素過濾
+  filter: {
+    ignoreSelectors: ['.nav', 'header'],
+    ignoreTags: ['svg'],
+    skipCommonComponents: true,
+  },
+  
+  // AI 整合（可選，但推薦使用）
+  agent: {
+    type: "opencode",
+    provider: "deepseek",
+    model: "deepseek/deepseek-reasoner",
+    apiKey: "your-api-key" // 替換為您的 API 金鑰
+  }
+})
+```
+
+### CDN 方式（無 AI 整合）
+
+如果您不需要 AI 整合功能，也可以使用 CDN：
+
+```html
+<script src="https://unpkg.com/@ender_romantice/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
+```
+
+> **限制**：CDN 方式無法使用 AI 整合功能，僅提供基礎的擷取和複製功能。
+
+### 使用方法
+- **複製到剪貼簿**：按住 `Ctrl+C`（macOS: `⌘+C`），移動滑鼠到目標元素上（會出現高亮框），點擊複製 HTML 和組件資訊
+- **快速複製**：按住 `Ctrl`（macOS: `⌘`），快速點按 `C`，然後在 800ms 內移動滑鼠並點擊目標元素
+- **AI 互動**：按住 `Ctrl+X`（macOS: `⌘+X`），移動滑鼠到目標元素上，點擊開啟提示詞輸入框進行 AI 編輯（需要配置 AI 整合）
+
+## 📚 詳細文件
+
+### 功能特性
+
+- **簡單易用**：按住 `Ctrl+C`（macOS: `⌘+C`）移動滑鼠，高亮目標元素，點擊即可擷取
+- **智慧複製**：自動複製元素的 HTML 片段與 Vue 組件堆疊資訊
+- **樣式隔離**：覆蓋層使用 Shadow DOM，不影響頁面原有樣式
+- **組件追蹤**：自動解析並顯示 Vue 組件層級關係
+- **可配置**：可自訂高亮顏色、標籤文字、元素過濾等設定
+- **AI 整合**：支援 Opencode 進行 AI 驅動的程式碼編輯
+
+### 完整配置
 
 ```javascript
 import { init } from '@ender_romantice/vue-grab'
@@ -86,7 +127,7 @@ init({
 })
 ```
 
-### 配置項說明
+#### 配置項說明
 
 - `highlightColor`: string - 高亮主色（用於選擇框邊框與標籤背景）
 - `labelTextColor`: string - 標籤文字顏色
@@ -100,7 +141,7 @@ init({
 - `agent.model`: string - 模型名稱
 - `agent.apiKey`: string - 您的 AI 服務 API 金鑰
 
-## AI 整合設定
+### AI 整合設定
 
 要啟用 Opencode AI 程式碼編輯功能：
 
@@ -121,7 +162,7 @@ npm install @ender_romantice/vue-grab-opencode --save-dev
 
 3. **在 `init()` 中配置代理**（參見上方的配置部分）。
 
-## 複製內容格式
+### 複製內容格式
 
 擷取的元素資訊會以以下格式複製到剪貼簿：
 
@@ -153,7 +194,7 @@ Path: html > body > div#example.card
 
 當 `includeLocatorTag` 設為 `false` 時，僅複製 `<referenced_element>` 區塊。
 
-## 重要說明
+### 重要說明
 
 - **組件堆疊解析**：組件堆疊解析依賴 Vue 執行階段的內部屬性（`__vueParentComponent`），在不同環境或 Vue 版本可能表現不同
 - **瀏覽器相容性**：需要支援現代瀏覽器 API（如 Shadow DOM、Clipboard API）

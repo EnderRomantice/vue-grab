@@ -8,7 +8,16 @@ export default defineConfig({
   plugins: [vue(), UnoCSS()],
   resolve: {
     alias: {
-      '@ender_romantice/vue-grab': path.resolve(__dirname, '../src/index.ts'),
+      '@ender_romantice/vue-grab': path.resolve(__dirname, '../packages/vue-grab/dist/index.js'),
+    },
+  },
+  server: {
+    proxy: {
+      '/api/code-edit': {
+        target: 'http://localhost:6567',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 })

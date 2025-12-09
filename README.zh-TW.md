@@ -6,183 +6,163 @@
 
 一個 Vue 3 工具庫，讓你可以輕鬆擷取頁面上的任何元素，並將其 HTML 片段和 Vue 組件堆疊資訊複製到剪貼簿，方便在 AI 工具中使用。
 
-## 這個專案是怎麼來的？
 
-我在刷推特的時候發現了 [React Grab](https://github.com/aidenybai/react-grab) 這個專案，覺得很有趣，我認為 Vue 也需要這個，所以我建立了這個倉庫。
 
-## 專案簡介
+## 🚀 快速開始
 
-**Vue Grab** 是 [React Grab](https://github.com/aidenybai/react-grab) 的 Vue 版本。它允許開發者透過簡單的快捷鍵操作，快速擷取頁面元素的資訊，包括：
+### 安裝（推薦 NPM）
 
-- 元素的 HTML 結構
-- Vue 組件堆疊資訊（組件名稱與檔案路徑）
-- CSS 選擇器路徑
-- 元素文字內容
+使用 NPM 安裝以獲得完整的 AI 整合功能：
 
-這些資訊會被格式化後複製到剪貼簿，方便貼到 AI 工具（如 ChatGPT、Cursor 等）中進行討論與分析。
+```bash
+pnpm add @ender_romantice/vue-grab
+# 或
+npm install @ender_romantice/vue-grab
+# 或
+yarn add @ender_romantice/vue-grab
+```
 
-## 功能特性
+> **注意**：如果您需要使用 AI 整合功能（Opencode），必須使用 NPM 安裝。CDN 方式無法使用 AI 整合功能。
+
+### 基本使用
+
+```javascript
+import { init } from '@ender_romantice/vue-grab'
+
+// 使用預設設定初始化
+init()
+```
+
+### 快速配置（含 AI 整合）
+
+```javascript
+import { init } from '@ender_romantice/vue-grab'
+
+init({
+  // UI 配置
+  highlightColor: '#2563EB',
+  labelTextColor: '#ffffff',
+  showTagHint: true,
+  
+  // 元素過濾
+  filter: {
+    ignoreSelectors: ['.nav', 'header'],
+    ignoreTags: ['svg'],
+    skipCommonComponents: true,
+  },
+  
+  // AI 整合（可選，但推薦使用）
+  agent: {
+    type: "opencode",
+    provider: "deepseek",
+    model: "deepseek/deepseek-reasoner",
+    apiKey: "your-api-key" // 替換為您的 API 金鑰
+  }
+})
+```
+
+### CDN 方式（無 AI 整合）
+
+如果您不需要 AI 整合功能，也可以使用 CDN：
+
+```html
+<script src="https://unpkg.com/@ender_romantice/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
+```
+
+> **限制**：CDN 方式無法使用 AI 整合功能，僅提供基礎的擷取和複製功能。
+
+### 使用方法
+- **複製到剪貼簿**：按住 `Ctrl+C`（macOS: `⌘+C`），移動滑鼠到目標元素上（會出現高亮框），點擊複製 HTML 和組件資訊
+- **快速複製**：按住 `Ctrl`（macOS: `⌘`），快速點按 `C`，然後在 800ms 內移動滑鼠並點擊目標元素
+- **AI 互動**：按住 `Ctrl+X`（macOS: `⌘+X`），移動滑鼠到目標元素上，點擊開啟提示詞輸入框進行 AI 編輯（需要配置 AI 整合）
+
+## 📚 詳細文件
+
+### 功能特性
 
 - **簡單易用**：按住 `Ctrl+C`（macOS: `⌘+C`）移動滑鼠，高亮目標元素，點擊即可擷取
 - **智慧複製**：自動複製元素的 HTML 片段與 Vue 組件堆疊資訊
 - **樣式隔離**：覆蓋層使用 Shadow DOM，不影響頁面原有樣式
 - **組件追蹤**：自動解析並顯示 Vue 組件層級關係
-- **輕量級**：體積小，無額外依賴
-- **高亮可配置**：可自訂高亮顏色與標籤文字顏色
-- **元素過濾**：可忽略指定選擇器/標籤，或跳過常見版面元件
-- **標籤提示開關**：可開關懸浮標籤提示
+- **可配置**：可自訂高亮顏色、標籤文字、元素過濾等設定
+- **AI 整合**：支援 Opencode 進行 AI 驅動的程式碼編輯
 
-## 快速開始
-
-### 線上體驗
-
-[線上示範](https://vue-grab.vercel.app/)
-
-### 在本機運行示範
-
-1. **安裝相依套件**
-   ```bash
-   # 安裝主庫相依套件
-   pnpm install
-
-   # 安裝示範網站相依套件
-   cd website
-   pnpm install
-   ```
-
-2. **建置主庫**
-   ```bash
-   # 在專案根目錄
-   pnpm build
-   ```
-
-3. **啟動示範網站**
-   ```bash
-   # 在 website 目錄
-   cd website
-   pnpm dev
-   ```
-
-   然後打開瀏覽器訪問顯示的本機地址（通常是 `http://localhost:5173`）
-
-4. **使用方法**
-   - **方式 A**：按住 `Ctrl+C`（macOS: `⌘+C`），移動滑鼠到目標元素上（會出現高亮框），點擊即可擷取
-   - **方式 B**：按住 `Ctrl`（macOS: `⌘`），快速點按 `C`，然後在 800ms 內移動滑鼠並點擊目標元素
-
-### 在專案中使用
-
-#### 方式一：CDN 引入
-
-```html
-<!-- 線上 CDN -->
-<script src="https://unpkg.com/@ender_romantice/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
-
-<!-- 或本地檔案 -->
-<script src="./dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
-```
-
-#### 方式二：NPM 安裝
-
-```bash
-npm install @ender_romantice/vue-grab
-# 或
-pnpm add @ender_romantice/vue-grab
-# 或
-yarn add @ender_romantice/vue-grab
-```
+### 完整配置
 
 ```javascript
 import { init } from '@ender_romantice/vue-grab'
 
-// 初始化（預設啟用）
-init()
-
-// 或使用自訂設定
 init({
   enabled: true,
   hotkey: 'c', // 或 ['c', 'v'] 支援多個快速鍵
   keyHoldDuration: 500, // 按鍵持續時間（毫秒）
-  // 新增的 UI/行為設定
+  
+  // UI 配置
   highlightColor: '#2563EB', // 邊框 + 標籤背景色
   labelTextColor: '#ffffff', // 標籤文字顏色
   showTagHint: true,         // 是否顯示懸浮標籤
+  includeLocatorTag: true,   // 是否包含 <vue_grab_locator> 段
+  
+  // 元素過濾
   filter: {
     ignoreSelectors: ['.nav', 'header'], // 需要忽略的選擇器
     ignoreTags: ['svg'],                  // 需要忽略的標籤名稱
     skipCommonComponents: true,           // 跳過 header/nav/footer/aside
   },
+  
+  // AI 整合（可選）
+  agent: {
+    type: "opencode",
+    provider: "deepseek",     // 服務提供商 ID
+    model: "deepseek/deepseek-reasoner", // 模型名稱
+    apiKey: "your-api-key"    // 您的 API 金鑰
+  },
+  
+  // 自訂處理器（可選）
   adapter: {
     open: (text) => {
-      // 自訂處理函式，例如開啟外部工具
       console.log('擷取的內容:', text)
     }
   }
 })
-// 說明：
-// - 當 hotkey 是僅由單個字元鍵組成的陣列（如 ['c','v']），表示 OR 語意：按任一個鍵觸發。
-// - 當 hotkey 陣列包含修飾鍵（如 ['Control','c'] 或 ['Meta','c']），表示組合（AND）語意：需同時按下。
-// - keyHoldDuration 控制對 'c' 鍵的「最近按下」判定時間視窗（毫秒），用於配合組合鍵更自然地觸發。
-// - init 是冪等的：多次呼叫不會重複註冊監聽器，後一次會覆蓋前一次設定。
-// - 選擇框會使用 highlightColor 的半透明填充，以提升在不同背景下的可讀性。
 ```
 
-### 設定項說明
+#### 配置項說明
 
-- highlightColor: string
-  - 高亮主色（用於選擇框邊框與標籤背景）
-- labelTextColor: string
-  - 標籤文字顏色
-- showTagHint: boolean
-  - 是否顯示懸浮的標籤提示
-- filter.ignoreSelectors: string[]
-  - 需要忽略的 CSS 選擇器（命中元素會被跳過，並繼續向上尋找父元素）
-- filter.ignoreTags: string[]
-  - 需要忽略的標籤名稱（如 `['svg', 'canvas']`）
-- filter.skipCommonComponents: boolean
-  - 是否跳過常見版面元素：`header`、`nav`、`footer`、`aside`
+- `highlightColor`: string - 高亮主色（用於選擇框邊框與標籤背景）
+- `labelTextColor`: string - 標籤文字顏色
+- `showTagHint`: boolean - 是否顯示懸浮的標籤提示
+- `includeLocatorTag`: boolean - 是否包含 `<vue_grab_locator>` 段（設為 false 時僅保留 `<referenced_element>`）
+- `filter.ignoreSelectors`: string[] - 需要忽略的 CSS 選擇器
+- `filter.ignoreTags`: string[] - 需要忽略的標籤名稱（如 `['svg', 'canvas']`）
+- `filter.skipCommonComponents`: boolean - 是否跳過常見版面元素：`header`、`nav`、`footer`、`aside`
+- `agent.type`: string - AI 代理類型（目前僅支援 "opencode"）
+- `agent.provider`: string - 服務提供商 ID（例如 "deepseek"、"anthropic"）
+- `agent.model`: string - 模型名稱
+- `agent.apiKey`: string - 您的 AI 服務 API 金鑰
 
-## 專案結構
+### AI 整合設定
 
-```
-vue-grab/
-├── src/                    # 主庫原始程式碼
-│   ├── index.ts           # 入口檔案
-│   └── modules/           # 功能模組
-│       ├── clipboard.ts   # 剪貼簿操作
-│       ├── dom.ts         # DOM 操作與組件堆疊解析
-│       ├── hotkeys.ts     # 快捷鍵處理
-│       └── overlay.ts     # 高亮覆蓋層
-├── website/               # 示範網站
-│   ├── src/
-│   │   ├── App.vue        # 示範頁面
-│   │   └── main.ts        # 入口檔案
-│   └── package.json
-├── dist/                  # 建置輸出
-└── package.json
-```
+要啟用 Opencode AI 程式碼編輯功能：
 
-## 開發
-
-### 建置主庫
-
+1. **安裝後端服務**：
 ```bash
-pnpm build
+npm install @ender_romantice/vue-grab-opencode --save-dev
 ```
 
-### 開發模式（監聽檔案變化）
-
-```bash
-pnpm dev
+2. **配置 package.json**，在執行開發伺服器時同時執行 AI 後端服務：
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "dev:ai": "concurrently \"npm run dev\" \"npx @ender_romantice/vue-grab-opencode\""
+  }
+}
 ```
 
-### 執行示範網站
+3. **在 `init()` 中配置代理**（參見上方的配置部分）。
 
-```bash
-cd website
-pnpm dev
-```
-
-## 📝 複製內容格式
+### 複製內容格式
 
 擷取的元素資訊會以以下格式複製到剪貼簿：
 
@@ -212,7 +192,9 @@ Path: html > body > div#example.card
 </referenced_element>
 ```
 
-## 重要說明
+當 `includeLocatorTag` 設為 `false` 時，僅複製 `<referenced_element>` 區塊。
+
+### 重要說明
 
 - **組件堆疊解析**：組件堆疊解析依賴 Vue 執行階段的內部屬性（`__vueParentComponent`），在不同環境或 Vue 版本可能表現不同
 - **瀏覽器相容性**：需要支援現代瀏覽器 API（如 Shadow DOM、Clipboard API）
@@ -224,4 +206,4 @@ MIT
 
 ## 致謝
 
-靈感來源於 [React Grab](https://github.com/aidenybai/react-grab) 專案。感謝 Vue 生態系統社群提供的技術支援和組件設計想法。
+靈感來源於 [React Grab](https://github.com/aidenybai/react-grab) 專案。
