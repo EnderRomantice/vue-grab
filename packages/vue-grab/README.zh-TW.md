@@ -147,7 +147,7 @@ init({
 
 1. **安裝後端服務**：
 ```bash
-npm install @ender_romantice/vue-grab-opencode --save-dev
+pnpm add @ender_romantice/vue-grab-opencode concurrently
 ```
 
 2. **配置 package.json**，在執行開發伺服器時同時執行 AI 後端服務：
