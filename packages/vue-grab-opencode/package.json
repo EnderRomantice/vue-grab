@@ -1,6 +1,6 @@
 {
   "name": "@ender_romantice/vue-grab-opencode",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "bin": {
     "vue-grab-opencode": "./dist/cli.js"
