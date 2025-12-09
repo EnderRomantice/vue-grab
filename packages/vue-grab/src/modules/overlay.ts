@@ -3,9 +3,13 @@ import { getConfig, DEFAULTS } from "./config";
 
 const hexToRGBA = (hex: string, alpha: number): string => {
   const normalized = hex.replace("#", "");
-  const full = normalized.length === 3
-    ? normalized.split("").map((c) => c + c).join("")
-    : normalized;
+  const full =
+    normalized.length === 3
+      ? normalized
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : normalized;
   const r = parseInt(full.slice(0, 2), 16);
   const g = parseInt(full.slice(2, 4), 16);
   const b = parseInt(full.slice(4, 6), 16);
@@ -15,8 +19,14 @@ const hexToRGBA = (hex: string, alpha: number): string => {
 const mountRoot = () => {
   const mountedHost = document.querySelector(`[${ATTRIBUTE_NAME}]`);
   if (mountedHost) {
-    const mountedRoot = (mountedHost as HTMLElement).shadowRoot?.querySelector(`[${ATTRIBUTE_NAME}]`);
-    if (mountedRoot instanceof HTMLDivElement && (mountedHost as any).shadowRoot) return mountedRoot as HTMLDivElement;
+    const mountedRoot = (mountedHost as HTMLElement).shadowRoot?.querySelector(
+      `[${ATTRIBUTE_NAME}]`,
+    );
+    if (
+      mountedRoot instanceof HTMLDivElement &&
+      (mountedHost as any).shadowRoot
+    )
+      return mountedRoot as HTMLDivElement;
   }
   const host = document.createElement("div");
   host.setAttribute(ATTRIBUTE_NAME, "true");
@@ -25,7 +35,7 @@ const mountRoot = () => {
   host.style.top = "0";
   host.style.left = "0";
   const shadowRoot = host.attachShadow({ mode: "open" });
-  
+
   // Add Styles
   const style = document.createElement("style");
   style.textContent = `
@@ -113,7 +123,12 @@ const mountRoot = () => {
   return root as HTMLDivElement;
 };
 
-export type SelectionBox = { x: number; y: number; width: number; height: number };
+export type SelectionBox = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
 
 export const ensureOverlay = () => {
   const root = mountRoot();
@@ -186,8 +201,8 @@ export const ensureOverlay = () => {
 export const hideOverlay = () => {
   const root = mountRoot();
   const elements = root.querySelectorAll(".vg-element");
-  elements.forEach(el => {
-      el.classList.remove("vg-visible");
+  elements.forEach((el) => {
+    el.classList.remove("vg-visible");
   });
 };
 
@@ -200,7 +215,7 @@ export const renderOverlay = (
   const { showTagHint } = getConfig();
   const { box, label, label2, crossX, crossY } = ensureOverlay();
   if (!box || !label || !label2) return;
-  
+
   // Make visible
   box.classList.add("vg-visible");
   if (crossX) crossX.classList.add("vg-visible");
@@ -210,12 +225,12 @@ export const renderOverlay = (
   box.style.top = `${rect.y}px`;
   box.style.width = `${rect.width}px`;
   box.style.height = `${rect.height}px`;
-  
+
   const cx = cursor?.x ?? Math.round(rect.x + rect.width / 2);
   const cy = cursor?.y ?? Math.round(rect.y + rect.height / 2);
   if (crossX) crossX.style.top = `${cy}px`;
   if (crossY) crossY.style.left = `${cx}px`;
-  
+
   if (showTagHint) {
     const { highlight } = getConfig();
     const bg = highlight.color ?? DEFAULTS.DEFAULT_COLOR;
@@ -231,19 +246,20 @@ export const renderOverlay = (
     label.style.top = `${labelY}px`;
     label.textContent = text ?? "VueGrab";
     label.classList.add("vg-visible");
-    
+
     label2.textContent = secondaryText ?? "";
     const gap = 8;
     // Calculate the position of label2 based on label's width
-    const labelWidth = label.getBoundingClientRect().width || label.offsetWidth || 0;
+    const labelWidth =
+      label.getBoundingClientRect().width || label.offsetWidth || 0;
     const x2 = labelX + labelWidth + gap;
     label2.style.left = `${x2}px`;
     label2.style.top = `${labelY}px`;
-    
+
     if (secondaryText) {
-        label2.classList.add("vg-visible");
+      label2.classList.add("vg-visible");
     } else {
-        label2.classList.remove("vg-visible");
+      label2.classList.remove("vg-visible");
     }
   } else {
     label.classList.remove("vg-visible");
@@ -252,103 +268,107 @@ export const renderOverlay = (
 };
 
 export const renderInput = (
-    rect: SelectionBox,
-    initialText: string,
-    onSubmit: (value: string) => void
+  rect: SelectionBox,
+  initialText: string,
+  onSubmit: (value: string) => void,
 ) => {
-    const { box, label, label2 } = ensureOverlay();
-    if (!label || !label2) return;
-    
-    if (box) box.classList.add("vg-visible");
-    
-    // Change label to "Wait.."
-    label.textContent = "Wait..";
-    label.classList.add("vg-visible");
-    
-    label2.innerHTML = "";
-    label2.classList.add("vg-visible");
-    label2.style.pointerEvents = "auto";
+  const { box, label, label2 } = ensureOverlay();
+  if (!label || !label2) return;
 
-    // Recalculate label2 position immediately because content changed
-    const gap = 8;
-    const labelX = parseFloat(label.style.left || "0");
-    const labelY = parseFloat(label.style.top || "0");
-    // Force a reflow or use getBoundingClientRect to ensure we get the new width of "Wait.."
-    const labelWidth = label.getBoundingClientRect().width || label.offsetWidth || 40; 
-    const x2 = labelX + labelWidth + gap;
-    label2.style.left = `${x2}px`;
-    label2.style.top = `${labelY}px`;
+  if (box) box.classList.add("vg-visible");
 
-    const input = document.createElement("input");
-    input.className = "vg-input";
-    input.value = "";
-    input.placeholder = "Input prompt...";
-    
-    input.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-            onSubmit(input.value);
-        }
-        e.stopPropagation();
-    });
-    // Stop click propagation to prevent closing
-    input.addEventListener("click", (e) => e.stopPropagation());
-    
-    label2.appendChild(input);
-    input.focus();
-    return input;
+  // Change label to "Wait.."
+  label.textContent = "Wait..";
+  label.classList.add("vg-visible");
+
+  label2.innerHTML = "";
+  label2.classList.add("vg-visible");
+  label2.style.pointerEvents = "auto";
+
+  // Recalculate label2 position immediately because content changed
+  const gap = 8;
+  const labelX = parseFloat(label.style.left || "0");
+  const labelY = parseFloat(label.style.top || "0");
+  // Force a reflow or use getBoundingClientRect to ensure we get the new width of "Wait.."
+  const labelWidth =
+    label.getBoundingClientRect().width || label.offsetWidth || 40;
+  const x2 = labelX + labelWidth + gap;
+  label2.style.left = `${x2}px`;
+  label2.style.top = `${labelY}px`;
+
+  const input = document.createElement("input");
+  input.className = "vg-input";
+  input.value = "";
+  input.placeholder = "Input prompt...";
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      onSubmit(input.value);
+    }
+    e.stopPropagation();
+  });
+  // Stop click propagation to prevent closing
+  input.addEventListener("click", (e) => e.stopPropagation());
+
+  label2.appendChild(input);
+  input.focus();
+  return input;
 };
 
 export const renderLoading = (elapsedTime: string) => {
-    const { box, label, label2 } = ensureOverlay();
-    if (!label || !label2) return;
-    
-    if (box) box.classList.add("vg-visible");
-    
-    // Change label to "Loading"
-    label.textContent = "Loading..";
-    label.classList.add("vg-visible");
+  const { box, label, label2 } = ensureOverlay();
+  if (!label || !label2) return;
 
-    // Recalculate label2 position immediately because content changed
-    const gap = 8;
-    const labelX = parseFloat(label.style.left || "0");
-    const labelY = parseFloat(label.style.top || "0");
-    const labelWidth = label.getBoundingClientRect().width || label.offsetWidth || 50; 
-    const x2 = labelX + labelWidth + gap;
-    label2.style.left = `${x2}px`;
-    label2.style.top = `${labelY}px`;
+  if (box) box.classList.add("vg-visible");
 
-    label2.innerHTML = `<span class="vg-spinner"></span><span>${elapsedTime}</span>`;
-    label2.classList.add("vg-visible");
+  // Change label to "Loading"
+  label.textContent = "Loading..";
+  label.classList.add("vg-visible");
+
+  // Recalculate label2 position immediately because content changed
+  const gap = 8;
+  const labelX = parseFloat(label.style.left || "0");
+  const labelY = parseFloat(label.style.top || "0");
+  const labelWidth =
+    label.getBoundingClientRect().width || label.offsetWidth || 50;
+  const x2 = labelX + labelWidth + gap;
+  label2.style.left = `${x2}px`;
+  label2.style.top = `${labelY}px`;
+
+  label2.innerHTML = `<span class="vg-spinner"></span><span>${elapsedTime}</span>`;
+  label2.classList.add("vg-visible");
 };
 
-export const renderResult = (status: "done" | "error" | "timeout", message?: string) => {
-    const { box, label, label2 } = ensureOverlay();
-    if (!label || !label2) return;
-    
-    if (box) box.classList.add("vg-visible");
+export const renderResult = (
+  status: "done" | "error" | "timeout",
+  message?: string,
+) => {
+  const { box, label, label2 } = ensureOverlay();
+  if (!label || !label2) return;
 
-    // Change label based on status
-    if (status === "done") {
-        label.textContent = "√ Done";
-        label.style.background = "#42b883"; // Vue Green
-        label.style.color = "#35495e";
-    } else if (status === "timeout") {
-        label.textContent = "× Timeout";
-        label.style.background = "#e6a23c"; // Warning/Orange
-        label.style.color = "white";
-    } else {
-        label.textContent = message ? `× ${message}` : "× Error";
-        label.style.background = "#e74c3c"; // Red
-        label.style.color = "white";
-    }
-    label.classList.add("vg-visible");
+  if (box) box.classList.add("vg-visible");
 
-    // Hide the spinner/timer (label2)
-    label2.classList.remove("vg-visible");
-    label2.innerHTML = "";
+  // Change label based on status
+  if (status === "done") {
+    label.textContent = "√ Done";
+    label.style.background = "#42b883"; // Vue Green
+    label.style.color = "#35495e";
+  } else if (status === "timeout") {
+    label.textContent = "× Timeout";
+    label.style.background = "#e6a23c"; // Warning/Orange
+    label.style.color = "white";
+  } else {
+    label.textContent = message ? `× ${message}` : "× Error";
+    label.style.background = "#e74c3c"; // Red
+    label.style.color = "white";
+  }
+  label.classList.add("vg-visible");
+
+  // Hide the spinner/timer (label2)
+  label2.classList.remove("vg-visible");
+  label2.innerHTML = "";
 };
 
-// 独立弹窗：复制后提示“copy <tag>”，配色与网站风格一致（Vue 绿与深色）
 export const showToast = (messageHTML: string, duration = 1600) => {
   const root = mountRoot();
   const prev = root.querySelector(".vg-toast") as HTMLDivElement | null;

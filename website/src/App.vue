@@ -20,7 +20,7 @@ const config = ref<Options>({
     agent: {
         type: "opencode",
         provider: "deepseek",
-        model: "deepseek/deepseek-chat",
+        model: "deepseek/deepseek-reasoner",
         apiKey: envApiKey,
     },
     filter: {
@@ -100,7 +100,7 @@ onMounted(() => {
                     alt="Vue Grab"
                     class="w-10 h-10"
                 />
-                 <span class="pixel-font text-2xl tracking-widest"
+                <span class="pixel-font text-2xl tracking-widest"
                     >vue-test</span
                 >
             </div>
@@ -383,7 +383,7 @@ onMounted(() => {
                                             ? {
                                                   type: 'opencode',
                                                   provider: 'deepseek',
-                                                  model: 'deepseek/deepseek-v3.2',
+                                                   model: 'deepseek/deepseek-reasoner',
                                                   apiKey: envApiKey,
                                               }
                                             : undefined
