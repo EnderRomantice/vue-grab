@@ -135,7 +135,7 @@ To enable AI code editing with Opencode:
 
 1. **Install the backend service**:
 ```bash
-npm install @ender_romantice/vue-grab-opencode --save-dev
+pnpm add @ender_romantice/vue-grab-opencode concurrently
 ```
 
 2. **Configure your package.json** to run the AI backend alongside your dev server:
