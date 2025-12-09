@@ -13,8 +13,6 @@ const config = ref<Options>({
     enabled: true,
     hotkey: ["c", "v"],
     keyHoldDuration: 500,
-    highlightColor: "#2563EB",
-    labelTextColor: "#ffffff",
     showTagHint: true,
     includeLocatorTag: true,
     agent: {
