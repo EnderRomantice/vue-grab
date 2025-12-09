@@ -75,6 +75,84 @@ var mountRoot = () => {
   host.style.top = "0";
   host.style.left = "0";
   const shadowRoot = host.attachShadow({ mode: "open" });
+  const style = document.createElement("style");
+  style.textContent = `
+    .vg-element {
+      transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      opacity: 0;
+    }
+    .vg-visible {
+      opacity: 1;
+    }
+    .vg-box {
+      border: 2px dashed;
+      border-radius: 6px;
+      position: fixed;
+      pointer-events: none;
+      z-index: 2147483647;
+    }
+    .vg-label, .vg-label-2 {
+      position: fixed;
+      padding: 2px 6px;
+      font-family: system-ui, sans-serif;
+      font-size: 11px;
+      border-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+      z-index: 2147483647;
+    }
+    .vg-label-2 {
+      max-width: 40vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #f8fafc;
+      background: #35495e;
+    }
+    .vg-input {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 11px;
+      font-family: inherit;
+      outline: none;
+      width: 150px;
+    }
+    .vg-spinner {
+      width: 10px;
+      height: 10px;
+      border: 2px solid #f8fafc;
+      border-top-color: transparent;
+      border-radius: 50%;
+      display: inline-block;
+      animation: vg-spin 1s linear infinite;
+      margin-right: 6px;
+      vertical-align: middle;
+      box-sizing: border-box;
+    }
+    @keyframes vg-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .vg-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      z-index: 2147483647;
+      pointer-events: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 2px solid #35495e;
+      background: #42b883;
+      color: #35495e;
+      font-family: system-ui, sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: opacity 120ms ease;
+    }
+  `;
+  shadowRoot.appendChild(style);
   const root = document.createElement("div");
   root.setAttribute(ATTRIBUTE_NAME, "true");
   shadowRoot.appendChild(root);
@@ -89,15 +167,11 @@ var ensureOverlay = () => {
     const borderColor = highlight.color ?? DEFAULTS.DEFAULT_COLOR;
     const boxShadow = highlight.boxShadow ?? DEFAULTS.DEFAULT_BOX_SHADOW;
     box = document.createElement("div");
-    box.className = "vg-box";
+    box.className = "vg-box vg-element";
     box.setAttribute(ATTRIBUTE_NAME, "true");
-    box.style.position = "fixed";
-    box.style.pointerEvents = "none";
-    box.style.border = `2px dashed ${borderColor}`;
-    box.style.borderRadius = "6px";
+    box.style.borderColor = borderColor;
     box.style.boxShadow = boxShadow;
     box.style.background = hexToRGBA(borderColor, 0.12);
-    box.style.zIndex = "2147483647";
     root.appendChild(box);
   }
   let label = root.querySelector(".vg-label");
@@ -106,37 +180,17 @@ var ensureOverlay = () => {
     const bg = highlight.color ?? DEFAULTS.DEFAULT_COLOR;
     const textColor = highlight.labelTextColor ?? DEFAULTS.DEFAULT_LABEL_TEXT;
     label = document.createElement("div");
-    label.className = "vg-label";
+    label.className = "vg-label vg-element";
     label.setAttribute(ATTRIBUTE_NAME, "true");
-    label.style.position = "fixed";
-    label.style.padding = "2px 6px";
-    label.style.fontFamily = "system-ui, sans-serif";
-    label.style.fontSize = "11px";
     label.style.color = textColor;
     label.style.background = bg;
-    label.style.borderRadius = "4px";
-    label.style.boxShadow = "0 1px 4px rgba(0,0,0,0.12)";
-    label.style.zIndex = "2147483647";
     root.appendChild(label);
   }
   let label2 = root.querySelector(".vg-label-2");
   if (!label2) {
     label2 = document.createElement("div");
-    label2.className = "vg-label-2";
+    label2.className = "vg-label-2 vg-element";
     label2.setAttribute(ATTRIBUTE_NAME, "true");
-    label2.style.position = "fixed";
-    label2.style.padding = "2px 6px";
-    label2.style.fontFamily = "system-ui, sans-serif";
-    label2.style.fontSize = "11px";
-    label2.style.color = "#f8fafc";
-    label2.style.background = "#35495e";
-    label2.style.borderRadius = "4px";
-    label2.style.boxShadow = "0 1px 4px rgba(0,0,0,0.12)";
-    label2.style.zIndex = "2147483647";
-    label2.style.maxWidth = "40vw";
-    label2.style.overflow = "hidden";
-    label2.style.textOverflow = "ellipsis";
-    label2.style.whiteSpace = "nowrap";
     root.appendChild(label2);
   }
   let crossX = root.querySelector(".vg-crosshair-x");
@@ -144,7 +198,7 @@ var ensureOverlay = () => {
     const { highlight } = getConfig();
     const borderColor = highlight.color ?? DEFAULTS.DEFAULT_COLOR;
     crossX = document.createElement("div");
-    crossX.className = "vg-crosshair-x";
+    crossX.className = "vg-crosshair-x vg-element";
     crossX.setAttribute(ATTRIBUTE_NAME, "true");
     crossX.style.position = "fixed";
     crossX.style.pointerEvents = "none";
@@ -159,7 +213,7 @@ var ensureOverlay = () => {
     const { highlight } = getConfig();
     const borderColor = highlight.color ?? DEFAULTS.DEFAULT_COLOR;
     crossY = document.createElement("div");
-    crossY.className = "vg-crosshair-y";
+    crossY.className = "vg-crosshair-y vg-element";
     crossY.setAttribute(ATTRIBUTE_NAME, "true");
     crossY.style.position = "fixed";
     crossY.style.pointerEvents = "none";
@@ -173,16 +227,18 @@ var ensureOverlay = () => {
 };
 var hideOverlay = () => {
   const root = mountRoot();
-  root.querySelector(".vg-box")?.remove();
-  root.querySelector(".vg-label")?.remove();
-  root.querySelector(".vg-label-2")?.remove();
-  root.querySelector(".vg-crosshair-x")?.remove();
-  root.querySelector(".vg-crosshair-y")?.remove();
+  const elements = root.querySelectorAll(".vg-element");
+  elements.forEach((el) => {
+    el.classList.remove("vg-visible");
+  });
 };
 var renderOverlay = (rect, text, cursor, secondaryText) => {
   const { showTagHint } = getConfig();
   const { box, label, label2, crossX, crossY } = ensureOverlay();
   if (!box || !label || !label2) return;
+  box.classList.add("vg-visible");
+  if (crossX) crossX.classList.add("vg-visible");
+  if (crossY) crossY.classList.add("vg-visible");
   box.style.left = `${rect.x}px`;
   box.style.top = `${rect.y}px`;
   box.style.width = `${rect.width}px`;
@@ -192,22 +248,100 @@ var renderOverlay = (rect, text, cursor, secondaryText) => {
   if (crossX) crossX.style.top = `${cy}px`;
   if (crossY) crossY.style.left = `${cx}px`;
   if (showTagHint) {
+    const { highlight } = getConfig();
+    const bg = highlight.color ?? DEFAULTS.DEFAULT_COLOR;
+    const textColor = highlight.labelTextColor ?? DEFAULTS.DEFAULT_LABEL_TEXT;
+    label.style.background = bg;
+    label.style.color = textColor;
     const labelX = rect.x;
     const labelY = Math.max(8, rect.y - 24);
     label.style.left = `${labelX}px`;
     label.style.top = `${labelY}px`;
     label.textContent = text ?? "VueGrab";
-    label.style.display = "block";
+    label.classList.add("vg-visible");
     label2.textContent = secondaryText ?? "";
-    label2.style.display = secondaryText ? "block" : "none";
     const gap = 8;
-    const x2 = labelX + (label.offsetWidth || 0) + gap;
+    const labelWidth = label.getBoundingClientRect().width || label.offsetWidth || 0;
+    const x2 = labelX + labelWidth + gap;
     label2.style.left = `${x2}px`;
     label2.style.top = `${labelY}px`;
+    if (secondaryText) {
+      label2.classList.add("vg-visible");
+    } else {
+      label2.classList.remove("vg-visible");
+    }
   } else {
-    label.style.display = "none";
-    label2.style.display = "none";
+    label.classList.remove("vg-visible");
+    label2.classList.remove("vg-visible");
   }
+};
+var renderInput = (rect, initialText, onSubmit) => {
+  const { box, label, label2 } = ensureOverlay();
+  if (!label || !label2) return;
+  if (box) box.classList.add("vg-visible");
+  label.textContent = "Wait..";
+  label.classList.add("vg-visible");
+  label2.innerHTML = "";
+  label2.classList.add("vg-visible");
+  label2.style.pointerEvents = "auto";
+  const gap = 8;
+  const labelX = parseFloat(label.style.left || "0");
+  const labelY = parseFloat(label.style.top || "0");
+  const labelWidth = label.getBoundingClientRect().width || label.offsetWidth || 40;
+  const x2 = labelX + labelWidth + gap;
+  label2.style.left = `${x2}px`;
+  label2.style.top = `${labelY}px`;
+  const input = document.createElement("input");
+  input.className = "vg-input";
+  input.value = "";
+  input.placeholder = "Input prompt...";
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      onSubmit(input.value);
+    }
+    e.stopPropagation();
+  });
+  input.addEventListener("click", (e) => e.stopPropagation());
+  label2.appendChild(input);
+  input.focus();
+  return input;
+};
+var renderLoading = (elapsedTime) => {
+  const { box, label, label2 } = ensureOverlay();
+  if (!label || !label2) return;
+  if (box) box.classList.add("vg-visible");
+  label.textContent = "Loading..";
+  label.classList.add("vg-visible");
+  const gap = 8;
+  const labelX = parseFloat(label.style.left || "0");
+  const labelY = parseFloat(label.style.top || "0");
+  const labelWidth = label.getBoundingClientRect().width || label.offsetWidth || 50;
+  const x2 = labelX + labelWidth + gap;
+  label2.style.left = `${x2}px`;
+  label2.style.top = `${labelY}px`;
+  label2.innerHTML = `<span class="vg-spinner"></span><span>${elapsedTime}</span>`;
+  label2.classList.add("vg-visible");
+};
+var renderResult = (status, message) => {
+  const { box, label, label2 } = ensureOverlay();
+  if (!label || !label2) return;
+  if (box) box.classList.add("vg-visible");
+  if (status === "done") {
+    label.textContent = "\u221A Done";
+    label.style.background = "#42b883";
+    label.style.color = "#35495e";
+  } else if (status === "timeout") {
+    label.textContent = "\xD7 Timeout";
+    label.style.background = "#e6a23c";
+    label.style.color = "white";
+  } else {
+    label.textContent = message ? `\xD7 ${message}` : "\xD7 Error";
+    label.style.background = "#e74c3c";
+    label.style.color = "white";
+  }
+  label.classList.add("vg-visible");
+  label2.classList.remove("vg-visible");
+  label2.innerHTML = "";
 };
 var showToast = (messageHTML, duration = 1600) => {
   const root = mountRoot();
@@ -216,23 +350,7 @@ var showToast = (messageHTML, duration = 1600) => {
   const toast = document.createElement("div");
   toast.className = "vg-toast";
   toast.setAttribute(ATTRIBUTE_NAME, "true");
-  toast.style.position = "fixed";
-  toast.style.left = "50%";
-  toast.style.bottom = "24px";
-  toast.style.transform = "translateX(-50%)";
-  toast.style.zIndex = "2147483647";
-  toast.style.pointerEvents = "none";
-  toast.style.padding = "6px 10px";
-  toast.style.borderRadius = "6px";
-  toast.style.border = "2px solid #35495e";
-  toast.style.background = "#42b883";
-  toast.style.color = "#35495e";
-  toast.style.fontFamily = "system-ui, sans-serif";
-  toast.style.fontSize = "12px";
-  toast.style.fontWeight = "500";
-  toast.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
   toast.style.opacity = "0";
-  toast.style.transition = "opacity 120ms ease";
   toast.innerHTML = messageHTML;
   root.appendChild(toast);
   requestAnimationFrame(() => {
@@ -400,6 +518,10 @@ var isComboPressed = (hotkey, holdMs) => {
 };
 
 // src/index.ts
+var AGENT_ENDPOINTS = {
+  claude: "http://127.0.0.1:3000/api/code-edit",
+  opencode: "http://127.0.0.1:6567/api/code-edit"
+};
 var activeCleanup = null;
 var init = (options = {}) => {
   if (options.enabled === false) return () => {
@@ -408,8 +530,19 @@ var init = (options = {}) => {
     hotkey: options.hotkey ?? getDefaultHotkey(),
     adapter: options.adapter,
     enabled: options.enabled ?? true,
-    keyHoldDuration: options.keyHoldDuration ?? 500
+    keyHoldDuration: options.keyHoldDuration ?? 500,
+    agent: options.agent ? {
+      type: options.agent.type,
+      endpoint: options.agent.endpoint || AGENT_ENDPOINTS[options.agent.type],
+      provider: options.agent.provider,
+      model: options.agent.model,
+      apiKey: options.agent.apiKey
+    } : void 0
   };
+  if (resolved.agent?.type === "opencode" && (!resolved.agent.apiKey || !resolved.agent.provider)) {
+    console.error("[VueGrab] Opencode agent requires 'apiKey' and 'provider' to be configured.");
+    resolved.agent = void 0;
+  }
   updateConfig({
     highlight: {
       color: options.highlightColor,
@@ -433,7 +566,23 @@ var init = (options = {}) => {
   let rafPending = false;
   let rafId = 0;
   let lastRenderKey = "";
+  let isInteracting = false;
+  let isWaiting = false;
+  let interactionTimerId = 0;
+  const cancelInteraction = () => {
+    if (isInteracting) {
+      isInteracting = false;
+      isWaiting = false;
+      if (interactionTimerId) cancelAnimationFrame(interactionTimerId);
+      hideOverlay();
+      lastRenderKey = "";
+    }
+  };
+  const isCtrlXPressed = () => {
+    return pressedKeys.has("Control") && pressedKeys.has("x");
+  };
   const onMouseMove = (e) => {
+    if (isInteracting) return;
     mouseX = e.clientX;
     mouseY = e.clientY;
     if (!rafPending) {
@@ -442,7 +591,8 @@ var init = (options = {}) => {
         rafPending = false;
         const el = getElementAtMouse(mouseX, mouseY);
         hovered = el;
-        if (el && isComboPressed(resolved.hotkey, resolved.keyHoldDuration)) {
+        const isActive = isComboPressed(resolved.hotkey, resolved.keyHoldDuration) || isCtrlXPressed();
+        if (el && isActive) {
           const rect = getRect(el);
           const key = `${rect.x}|${rect.y}|${rect.width}|${rect.height}|${el.tagName}`;
           if (key !== lastRenderKey) {
@@ -465,7 +615,139 @@ var init = (options = {}) => {
     }
   };
   const onClick = async (e) => {
+    if (isInteracting) {
+      if (isWaiting) return;
+      cancelInteraction();
+      return;
+    }
     if (!hovered) return;
+    if (e.ctrlKey && pressedKeys.has("x")) {
+      e.stopPropagation();
+      e.preventDefault();
+      isInteracting = true;
+      const rect = getRect(hovered);
+      renderInput(rect, "", async (value) => {
+        isWaiting = true;
+        const startTime = performance.now();
+        let done = false;
+        const updateTimer = () => {
+          if (!isInteracting || done) return;
+          const elapsedMs = performance.now() - startTime;
+          if (elapsedMs > 3e4) {
+            done = true;
+            isWaiting = false;
+            renderResult("timeout");
+            setTimeout(() => {
+              if (isInteracting) {
+                cancelInteraction();
+              }
+            }, 2e3);
+            return;
+          }
+          const elapsedSec = (elapsedMs / 1e3).toFixed(6);
+          renderLoading(`${elapsedSec} s`);
+          interactionTimerId = requestAnimationFrame(updateTimer);
+        };
+        updateTimer();
+        if (resolved.agent?.endpoint) {
+          try {
+            const locator = getLocatorData(hovered);
+            const htmlSnippet = getHTMLSnippet(hovered);
+            const response = await fetch(resolved.agent.endpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                prompt: value,
+                locator,
+                htmlSnippet,
+                agentConfig: {
+                  provider: resolved.agent.provider,
+                  model: resolved.agent.model,
+                  apiKey: resolved.agent.apiKey
+                }
+              })
+            });
+            if (done) return;
+            if (!response.body) throw new Error("No response body");
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+            let currentEvent = "message";
+            while (true) {
+              const { done: streamDone, value: chunk } = await reader.read();
+              if (streamDone) break;
+              buffer += decoder.decode(chunk, { stream: true });
+              const lines = buffer.split("\n");
+              buffer = lines.pop() || "";
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed) {
+                  continue;
+                }
+                if (trimmed.startsWith("event: ")) {
+                  currentEvent = trimmed.slice(7).trim();
+                } else if (trimmed.startsWith("data: ")) {
+                  const data = trimmed.slice(6);
+                  if (currentEvent === "error") {
+                    let msg = data;
+                    try {
+                      msg = JSON.parse(data).message;
+                    } catch {
+                    }
+                    throw new Error(msg);
+                  } else if (currentEvent === "done") {
+                    done = true;
+                    isWaiting = false;
+                    renderResult("done");
+                    if (interactionTimerId) cancelAnimationFrame(interactionTimerId);
+                  } else {
+                    let preview = data;
+                    try {
+                      const json = JSON.parse(data);
+                      if (json.type === "fragment") preview = "Generating...";
+                      else if (json.message) preview = json.message;
+                    } catch {
+                    }
+                    if (preview.length > 30) preview = preview.slice(0, 30) + "...";
+                    renderLoading(preview);
+                  }
+                }
+              }
+            }
+            if (!done && !response.ok) {
+              throw new Error(`Server Error: ${response.statusText}`);
+            }
+            setTimeout(() => {
+              if (isInteracting) {
+                cancelInteraction();
+              }
+            }, 2e3);
+          } catch (err) {
+            if (!done) {
+              done = true;
+              isWaiting = false;
+              if (interactionTimerId) cancelAnimationFrame(interactionTimerId);
+              renderResult("error", err.message || "Network Error");
+              setTimeout(() => {
+                if (isInteracting) {
+                  cancelInteraction();
+                }
+              }, 2e3);
+            }
+          }
+        } else {
+          console.warn("No agent endpoint configured.");
+          done = true;
+          isWaiting = false;
+          if (interactionTimerId) cancelAnimationFrame(interactionTimerId);
+          renderResult("done");
+          setTimeout(() => {
+            if (isInteracting) cancelInteraction();
+          }, 1e3);
+        }
+      });
+      return;
+    }
     if (!isComboPressed(resolved.hotkey, resolved.keyHoldDuration)) return;
     e.stopPropagation();
     e.preventDefault();
@@ -497,7 +779,9 @@ ${htmlSnippet}
     const k = normalizeKey(e.key);
     pressedKeys.add(k);
     lastKeyDownTimestamps.set(k, Date.now());
-    if (hovered && isComboPressed(resolved.hotkey, resolved.keyHoldDuration)) {
+    if (isInteracting) return;
+    const isActive = isComboPressed(resolved.hotkey, resolved.keyHoldDuration) || isCtrlXPressed();
+    if (hovered && isActive) {
       const locator = getLocatorData(hovered);
       const names = (locator.vue ?? []).map((c) => c?.name || "Anonymous");
       const chain = names.length ? names.join(" > ") : "";
@@ -511,7 +795,8 @@ ${htmlSnippet}
   };
   const onKeyUp = (e) => {
     pressedKeys.delete(normalizeKey(e.key));
-    if (!isComboPressed(resolved.hotkey, resolved.keyHoldDuration)) hideOverlay();
+    const isActive = isComboPressed(resolved.hotkey, resolved.keyHoldDuration) || isCtrlXPressed();
+    if (!isInteracting && !isActive) hideOverlay();
   };
   window.addEventListener("mousemove", onMouseMove);
   window.addEventListener("click", onClick, true);
@@ -523,6 +808,7 @@ ${htmlSnippet}
     document.removeEventListener("keydown", onKeyDown);
     document.removeEventListener("keyup", onKeyUp);
     if (rafId) cancelAnimationFrame(rafId);
+    if (interactionTimerId) cancelAnimationFrame(interactionTimerId);
     hideOverlay();
   };
   activeCleanup = cleanup;
