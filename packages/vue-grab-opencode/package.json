@@ -1,6 +1,6 @@
 {
   "name": "@ender_romantice/vue-grab-opencode",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "type": "module",
   "bin": {
     "vue-grab-opencode": "./dist/cli.js"
@@ -27,7 +27,6 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
-    "opencode-ai": "^1.0.134",
     "@hono/node-server": "^1.19.6",
     "@opencode-ai/sdk": "^1.0.0",
     "hono": "^4.0.0",

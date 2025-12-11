@@ -1,0 +1,432 @@
+import { copyTextToClipboard } from "./modules/clipboard";
+import { hideOverlay, renderOverlay, showToast, renderInput, renderLoading, renderResult, cleanupSessionOverlay } from "./modules/overlay";
+import { getElementAtMouse, getRect, getHTMLSnippet, getLocatorData } from "./modules/dom";
+import { updateConfig, getConfig } from "./modules/config";
+import {
+  normalizeKey,
+  getDefaultHotkey,
+  isComboPressed,
+  pressedKeys,
+  lastKeyDownTimestamps,
+} from "./modules/hotkeys";
+
+export type Hotkey = KeyboardEvent["key"];
+
+export interface Options {
+  adapter?: { open: (text: string) => void };
+  enabled?: boolean;
+  hotkey?: Hotkey | Hotkey[];
+  keyHoldDuration?: number;
+  agent?: {
+    type: "claude" | "opencode";
+    endpoint?: string;
+    provider?: string;
+    model?: string;
+    apiKey?: string;
+  };
+  highlightColor?: string;
+  labelTextColor?: string;
+  showTagHint?: boolean;
+  includeLocatorTag?: boolean;
+  filter?: {
+    ignoreSelectors?: string[];
+    ignoreTags?: string[];
+    skipCommonComponents?: boolean;
+  };
+}
+
+const AGENT_ENDPOINTS = {
+    claude: "http://127.0.0.1:3000/api/code-edit",
+    opencode: "http://127.0.0.1:6569/api/code-edit"
+};
+
+let activeCleanup: (() => void) | null = null;
+
+export const init = (options: Options = {}) => {
+  if (options.enabled === false) return () => {};
+  const resolved = {
+    hotkey: options.hotkey ?? getDefaultHotkey(),
+    adapter: options.adapter,
+    enabled: options.enabled ?? true,
+    keyHoldDuration: options.keyHoldDuration ?? 500,
+    agent: options.agent ? {
+        type: options.agent.type,
+        endpoint: options.agent.endpoint || AGENT_ENDPOINTS[options.agent.type],
+        provider: options.agent.provider,
+        model: options.agent.model,
+        apiKey: options.agent.apiKey
+    } : undefined,
+  } satisfies Options;
+
+   // No validation for agent configuration - local servers may handle their own auth
+
+  // Apply runtime UI/behavior configuration
+  updateConfig({
+    highlight: {
+      color: options.highlightColor,
+      labelTextColor: options.labelTextColor,
+    },
+    filter: {
+      ignoreSelectors: options.filter?.ignoreSelectors,
+      ignoreTags: options.filter?.ignoreTags,
+      skipCommonComponents: options.filter?.skipCommonComponents,
+    },
+    showTagHint: options.showTagHint ?? true,
+    includeLocatorTag: options.includeLocatorTag ?? true,
+  });
+
+  // If already initialized, clean up previous listeners to avoid duplicates
+  try {
+    activeCleanup?.();
+  } catch {}
+
+  let mouseX = -1000;
+  let mouseY = -1000;
+  let hovered: Element | null = null;
+  let rafPending = false;
+  let rafId = 0;
+  let lastRenderKey = "";
+  
+   const activeSessions = new Map<string, {
+     element: Element;
+     rect: ReturnType<typeof getRect>;
+     isWaiting: boolean;
+     done: boolean;
+     startTime: number;
+     lastUpdateTime: number;
+     currentStatus: string;
+     sessionId: string;
+   }>();
+   
+   let globalAnimationFrameId: number | null = null;
+   
+   const updateAllSessions = () => {
+     const now = performance.now();
+     let hasActiveSessions = false;
+     
+     for (const [sessionId, session] of activeSessions.entries()) {
+       if (session.done || !session.isWaiting) continue;
+       
+       const elapsedMs = now - session.startTime;
+       if (elapsedMs > 30000) {
+         // Timeout
+         session.done = true;
+         session.isWaiting = false;
+         session.currentStatus = "timeout";
+                        renderResult("timeout", undefined, sessionId, session.rect);
+         
+         setTimeout(() => {
+           cancelInteraction(sessionId);
+         }, 2000);
+         continue;
+       }
+       
+       // Update timer display only every 100ms to reduce DOM operations
+       if (now - session.lastUpdateTime > 100) {
+         const elapsedSec = (elapsedMs / 1000).toFixed(6);
+                        renderLoading(`${elapsedSec} s`, sessionId, session.rect);
+         session.lastUpdateTime = now;
+       }
+       
+       hasActiveSessions = true;
+     }
+     
+     // Continue animation loop if there are active sessions
+     if (hasActiveSessions) {
+       globalAnimationFrameId = requestAnimationFrame(updateAllSessions);
+     } else {
+       globalAnimationFrameId = null;
+     }
+   };
+   
+   const startGlobalAnimationIfNeeded = () => {
+     if (globalAnimationFrameId === null) {
+       globalAnimationFrameId = requestAnimationFrame(updateAllSessions);
+     }
+   };
+  
+  let nextSessionId = 1;
+  let hoverInteractionTimerId = 0;
+
+   const cancelInteraction = (sessionId?: string) => {
+     if (sessionId) {
+       const session = activeSessions.get(sessionId);
+       if (session) {
+         hideOverlay(sessionId);
+         // Clean up overlay elements after fade out
+         setTimeout(() => {
+           cleanupSessionOverlay(sessionId);
+         }, 2000);
+         activeSessions.delete(sessionId);
+         // Stop global animation if no more sessions
+         if (activeSessions.size === 0 && globalAnimationFrameId) {
+           cancelAnimationFrame(globalAnimationFrameId);
+           globalAnimationFrameId = null;
+         }
+       }
+     } else {
+       // Cancel all sessions
+       for (const [id] of activeSessions.entries()) {
+         hideOverlay(id);
+         // Clean up overlay elements after fade out
+         setTimeout(() => {
+           cleanupSessionOverlay(id);
+         }, 2000);
+       }
+       activeSessions.clear();
+       lastRenderKey = ""; // Reset so hover can resume
+       if (globalAnimationFrameId) {
+         cancelAnimationFrame(globalAnimationFrameId);
+         globalAnimationFrameId = null;
+       }
+     }
+   };
+
+  const isCtrlXPressed = () => {
+    return pressedKeys.has("Control") && pressedKeys.has("x");
+  };
+
+   const onMouseMove = (e: MouseEvent) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    if (!rafPending) {
+      rafPending = true;
+      rafId = requestAnimationFrame(() => {
+        rafPending = false;
+         const el = getElementAtMouse(mouseX, mouseY);
+        hovered = el;
+        
+        // Allow highlighting even when there are active sessions
+        // This enables Ctrl+X to work on other elements while sessions are ongoing
+        
+        const isActive = isComboPressed(resolved.hotkey!, resolved.keyHoldDuration) || isCtrlXPressed();
+        if (el && isActive) {
+          const rect = getRect(el);
+          const key = `${rect.x}|${rect.y}|${rect.width}|${rect.height}|${el.tagName}`;
+          if (key !== lastRenderKey) {
+            lastRenderKey = key;
+            const locator = getLocatorData(el);
+            const names = (locator.vue ?? []).map((c: any) => c?.name || "Anonymous");
+            const chain = names.length ? names.join(" > ") : "";
+             renderOverlay(
+               rect,
+               el.tagName.toLowerCase(),
+               { x: mouseX, y: mouseY },
+               chain,
+               undefined // No session ID for hover highlighting
+             );
+          }
+        } else {
+          lastRenderKey = "";
+           hideOverlay(); // Hide only non-session overlays
+        }
+      });
+    }
+  };
+
+   const onClick = async (e: MouseEvent) => {
+    const isCtrlXClick = e.ctrlKey && pressedKeys.has("x");
+    
+    if (!hovered) return;
+    
+     if (isCtrlXClick) {
+          e.stopPropagation();
+          e.preventDefault();
+          
+          const sessionId = `session-${nextSessionId++}`;
+          const rect = getRect(hovered);
+          
+           // Create session entry
+            const session = {
+              element: hovered,
+              rect,
+              isWaiting: false,
+              done: false,
+              startTime: 0,
+              lastUpdateTime: 0,
+              currentStatus: "input",
+              sessionId
+            };
+           activeSessions.set(sessionId, session);
+           
+           // Render input for this session
+           renderInput(rect, "", async (value) => {
+                // Update session state
+                session.isWaiting = true;
+                session.startTime = performance.now();
+                session.lastUpdateTime = session.startTime;
+                session.currentStatus = "loading";
+                
+                // Start global animation loop if not already running
+                startGlobalAnimationIfNeeded();
+
+              if (resolved.agent?.endpoint) {
+                  try {
+                     const locator = getLocatorData(hovered!);
+                     const htmlSnippet = getHTMLSnippet(hovered!);
+                     
+                     const response = await fetch(resolved.agent.endpoint, {
+                         method: "POST",
+                         headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            prompt: value,
+                            locator,
+                            htmlSnippet,
+                            agentConfig: {
+                                ...(resolved.agent.provider && { provider: resolved.agent.provider }),
+                                ...(resolved.agent.model && { model: resolved.agent.model }),
+                                ...(resolved.agent.apiKey && { apiKey: resolved.agent.apiKey })
+                            }
+                        })
+                     });
+                     
+                     if (session.done) return; 
+
+                     if (!response.body) throw new Error("No response body");
+                     const reader = response.body.getReader();
+                     const decoder = new TextDecoder();
+                     let buffer = "";
+                     let currentEvent = "message";
+
+                     while (true) {
+                         const { done: streamDone, value: chunk } = await reader.read();
+                         if (streamDone) break;
+                         
+                         buffer += decoder.decode(chunk, { stream: true });
+                         const lines = buffer.split("\n");
+                         buffer = lines.pop() || "";
+
+                         for (const line of lines) {
+                             const trimmed = line.trim();
+                             if (!trimmed) {
+                                 continue;
+                             }
+                             if (trimmed.startsWith("event: ")) {
+                                 currentEvent = trimmed.slice(7).trim();
+                             } else if (trimmed.startsWith("data: ")) {
+                                 const data = trimmed.slice(6);
+                                 if (currentEvent === "error") {
+                                     let msg = data;
+                                     try { msg = JSON.parse(data).message; } catch {}
+                                     throw new Error(msg);
+                                 } else if (currentEvent === "done") {
+                                     session.done = true;
+                                     session.isWaiting = false;
+                                     session.currentStatus = "done";
+                                      renderResult("done", undefined, sessionId, session.rect);
+                                      // Timer will be stopped by global animation loop when session is done
+                                 } else {
+                                     let preview = data;
+                                     try {
+                                         const json = JSON.parse(data);
+                                         if (json.type === "fragment") preview = "Generating...";
+                                         else if (json.message) preview = json.message;
+                                     } catch {}
+                                     if (preview.length > 30) preview = preview.slice(0, 30) + "...";
+                                     renderLoading(preview, sessionId);
+                                 }
+                             }
+                         }
+                     }
+
+                     if (!session.done && !response.ok) {
+                          throw new Error(`Server Error: ${response.statusText}`);
+                     }
+                     
+                     setTimeout(() => {
+                         cancelInteraction(sessionId);
+                     }, 2000);
+
+                  } catch (err: any) {
+                      if (!session.done) {
+                         session.done = true;
+                         session.isWaiting = false;
+                         session.currentStatus = "error";
+                          // Timer will be stopped by global animation loop when session is done
+                          renderResult("error", err.message || "Network Error", sessionId, session.rect);
+                         
+                         setTimeout(() => {
+                             cancelInteraction(sessionId);
+                         }, 2000);
+                      }
+                  }
+               } else {
+                   console.warn("No agent endpoint configured.");
+                   session.done = true;
+                   session.isWaiting = false;
+                   session.currentStatus = "error";
+                    // Timer will be stopped by global animation loop when session is done
+                    renderResult("error", "Agent not configured", sessionId, session.rect);
+                    setTimeout(() => { cancelInteraction(sessionId); }, 2000);
+               }
+          }, sessionId);
+          return;
+     }
+
+    if (!isComboPressed(resolved.hotkey!, resolved.keyHoldDuration)) return;
+    e.stopPropagation();
+    e.preventDefault();
+    try {
+      const htmlSnippet = getHTMLSnippet(hovered);
+      const locator = getLocatorData(hovered);
+      const locatorJSON = JSON.stringify(locator, null, 2);
+      const cfg = getConfig();
+      const locatorBlock = `\n\n<vue_grab_locator>\n${locatorJSON}\n</vue_grab_locator>`;
+      const refBlock = `\n\n<referenced_element>\n${htmlSnippet}\n</referenced_element>`;
+      const combined = `${cfg.includeLocatorTag ? locatorBlock : ""}${refBlock}`;
+      await copyTextToClipboard(combined);
+      hideOverlay();
+      const tag = hovered.tagName.toLowerCase();
+      showToast(`<strong>copy</strong> &lt;${tag}&gt;`);
+      resolved.adapter?.open?.(locatorJSON);
+    } catch {}
+  };
+
+  const onKeyDown = (e: KeyboardEvent) => {
+    const k = normalizeKey(e.key);
+     pressedKeys.add(k as Hotkey);
+    lastKeyDownTimestamps.set(k, Date.now());
+    
+    const isActive = isComboPressed(resolved.hotkey!, resolved.keyHoldDuration) || isCtrlXPressed();
+
+    if (hovered && isActive) {
+      const locator = getLocatorData(hovered);
+      const names = (locator.vue ?? []).map((c: any) => c?.name || "Anonymous");
+      const chain = names.length ? names.join(" > ") : "";
+             renderOverlay(
+               getRect(hovered),
+               hovered.tagName.toLowerCase(),
+               { x: mouseX, y: mouseY },
+               chain,
+               undefined // No session ID for hover highlighting
+             );
+    }
+  };
+   const onKeyUp = (e: KeyboardEvent) => {
+    pressedKeys.delete(normalizeKey(e.key) as Hotkey);
+    const isActive = isComboPressed(resolved.hotkey!, resolved.keyHoldDuration) || isCtrlXPressed();
+    if (activeSessions.size === 0 && !isActive) hideOverlay();
+  };
+
+  window.addEventListener("mousemove", onMouseMove);
+  window.addEventListener("click", onClick, true);
+  document.addEventListener("keydown", onKeyDown);
+  document.addEventListener("keyup", onKeyUp);
+
+   const cleanup = () => {
+    window.removeEventListener("mousemove", onMouseMove);
+    window.removeEventListener("click", onClick, true);
+    document.removeEventListener("keydown", onKeyDown);
+    document.removeEventListener("keyup", onKeyUp);
+    if (rafId) cancelAnimationFrame(rafId);
+    // Cancel all active sessions
+    cancelInteraction();
+    hideOverlay();
+  };
+  activeCleanup = cleanup;
+  return cleanup;
+};
+
+if (typeof window !== "undefined" && typeof document !== "undefined") {
+  init({});
+}

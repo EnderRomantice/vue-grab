@@ -19,13 +19,8 @@ export const isComboPressed = (hotkey: Hotkey | Hotkey[], holdMs?: number) => {
   const toKeys = (hk: Hotkey | Hotkey[]) => (Array.isArray(hk) ? hk : [hk]).map(normalizeKey);
   const keys = toKeys(hotkey);
 
-  // Helper: check if a single key is held or (for 'c') recently pressed
+  // Helper: check if a single key is held
   const isKeyActive = (k: string) => {
-    if (k === "c") {
-      const cHeld = pressedKeys.has("c" as Hotkey);
-      const cRecent = (lastKeyDownTimestamps.get("c") ?? 0) > Date.now() - windowMs;
-      return cHeld || cRecent;
-    }
     return pressedKeys.has(k as Hotkey);
   };
 
@@ -35,12 +30,6 @@ export const isComboPressed = (hotkey: Hotkey | Hotkey[], holdMs?: number) => {
     return keys.some((k) => isKeyActive(k));
   }
 
-  // Otherwise treat as a combo (AND semantics), with special handling for 'c'
-  const hasC = keys.includes("c");
-  const modifiers = keys.filter((k) => k !== "c");
-  const modifiersHeld = modifiers.every((k) => pressedKeys.has(k as Hotkey));
-  if (hasC) {
-    return modifiersHeld && isKeyActive("c");
-  }
-  return keys.every((k) => pressedKeys.has(k as Hotkey));
+  // Otherwise treat as a combo (AND semantics)
+  return keys.every((k) => isKeyActive(k));
 };

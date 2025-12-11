@@ -55,35 +55,67 @@ export const getLocatorData = (el: Element) => {
 
 export const getElementAtMouse = (x: number, y: number): Element | null => {
   let el = document.elementFromPoint(x, y);
-  if (!(el instanceof Element)) return null;
-  const cfg = getConfig();
-  const ignoreTags = (cfg.filter.ignoreTags ?? []).map((t) => t.toLowerCase());
-  const commonTags = ["header", "nav", "footer", "aside"];
-  const shouldIgnore = (node: Element) => {
-    const tag = node.tagName.toLowerCase();
-    if (ignoreTags.includes(tag)) return true;
-    if (cfg.filter.skipCommonComponents && commonTags.includes(tag))
-      return true;
-    const selectors = cfg.filter.ignoreSelectors ?? [];
-    if (selectors.length) {
-      try {
-        for (const sel of selectors) {
-          if (
-            sel &&
-            (node as HTMLElement).matches &&
-            (node as HTMLElement).matches(sel)
-          )
-            return true;
+  
+  // Skip vue-grab overlay elements (in shadow DOM)
+  while (el) {
+    // Check if element is inside vue-grab shadow DOM
+    const root = el.getRootNode();
+    if (root instanceof ShadowRoot) {
+      const host = root.host as HTMLElement;
+      if (host && host.hasAttribute && host.hasAttribute('data-vue-grab')) {
+        // This is a vue-grab overlay element, try to get element underneath
+        // Temporarily hide the overlay host to get the underlying element
+        const originalDisplay = host.style.display;
+        host.style.display = 'none';
+        try {
+          const underlyingEl = document.elementFromPoint(x, y);
+          host.style.display = originalDisplay;
+          
+          if (underlyingEl && underlyingEl !== host) {
+            el = underlyingEl;
+            continue; // Check if the new element is also in vue-grab shadow DOM
+          }
+        } catch (e) {
+          host.style.display = originalDisplay;
         }
-      } catch {}
+      }
     }
-    return false;
-  };
-  let cursor: Element | null = el;
-  while (cursor && shouldIgnore(cursor)) {
-    cursor = cursor.parentElement;
+    
+    if (!(el instanceof Element)) return null;
+    
+    const cfg = getConfig();
+    const ignoreTags = (cfg.filter.ignoreTags ?? []).map((t) => t.toLowerCase());
+    const commonTags = ["header", "nav", "footer", "aside"];
+    const shouldIgnore = (node: Element) => {
+      const tag = node.tagName.toLowerCase();
+      if (ignoreTags.includes(tag)) return true;
+      if (cfg.filter.skipCommonComponents && commonTags.includes(tag))
+        return true;
+      const selectors = cfg.filter.ignoreSelectors ?? [];
+      if (selectors.length) {
+        try {
+          for (const sel of selectors) {
+            if (
+              sel &&
+              (node as HTMLElement).matches &&
+              (node as HTMLElement).matches(sel)
+            )
+              return true;
+          }
+        } catch {}
+      }
+      return false;
+    };
+    
+    if (shouldIgnore(el)) {
+      el = el.parentElement;
+      continue;
+    }
+    
+    break;
   }
-  return cursor;
+  
+  return el as Element | null;
 };
 
 export const getRect = (el: Element): SelectionBox => {

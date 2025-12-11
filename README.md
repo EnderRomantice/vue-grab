@@ -8,23 +8,72 @@ A Vue 3 utility library that lets you easily grab any element on the page and co
 
 ## 🚀 Quick Start
 
-### Installation
+### Step 1: Install Dependencies
+Install both `vue-grab` and the Opencode bridge server:
+```bash
+pnpm add @ender_romantice/vue-grab @ender_romantice/vue-grab-opencode concurrently
+# or
+npm install @ender_romantice/vue-grab @ender_romantice/vue-grab-opencode concurrently
+# or
+yarn add @ender_romantice/vue-grab @ender_romantice/vue-grab-opencode concurrently
+```
 
-#### CDN
+### Step 2: Install Opencode with Bun
+**Important**: Opencode must be installed using Bun for compatibility:
+```bash
+# Install Bun if you haven't already
+curl -fsSL https://bun.sh/install | bash
+
+# Install Opencode SDK
+bun install opencode-ai -g
+```
+
+### Step 3: Configure Your App
+In your main Vue file (e.g., `main.js` or `main.ts`):
+```javascript
+import { init } from '@ender_romantice/vue-grab'
+
+init({
+  agent: {
+    type: "opencode"
+    // No API key needed - uses locally installed Opencode
+  }
+})
+```
+
+### Step 4: Start the Development Environment
+Add to your `package.json` scripts:
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "dev:ai": "concurrently \"npm run dev\" \"npx @ender_romantice/vue-grab-opencode\""
+  }
+}
+```
+Then run:
+```bash
+npm run dev:ai
+```
+
+### Step 5: Use AI Editing in Browser
+1. Hold `Ctrl+X` (macOS: `⌘+X`)
+2. Hover over any element in your Vue app
+3. Click to open the AI prompt input
+4. Enter your editing request (e.g., "Make this button blue")
+5. Watch as Opencode generates the code changes
+
+### Alternative: CDN Installation (No AI)
+If you don't need AI features, use the CDN version:
 ```html
 <script src="https://unpkg.com/@ender_romantice/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
 ```
+> **Note**: CDN installation only provides basic copy functionality, not AI integration.
 
-#### NPM
-```bash
-npm install @ender_romantice/vue-grab
-# or
-pnpm add @ender_romantice/vue-grab
-# or
-yarn add @ender_romantice/vue-grab
-```
+> **Note**: If you need AI integration (Opencode), you must use NPM installation. CDN installation does not support AI integration.
 
 ### Basic Usage
+
 ```javascript
 import { init } from '@ender_romantice/vue-grab'
 
@@ -57,12 +106,31 @@ init({
   // AI Integration (Optional)
   agent: {
     type: "opencode",
-    provider: "deepseek",
-    model: "deepseek/deepseek-reasoner",
-    apiKey: "your-api-key"
+    // Optional: specify a model
+    // model: "provider/model-name",
+    // Optional: custom endpoint (default: http://localhost:6569/api/code-edit)
+    // endpoint: "http://localhost:3000/api/code-edit"
   }
 })
 ```
+
+Run the opencode connector concurrently with your development server:
+
+```json
+{
+    "scripts":{
+        "dev": "concurrently \"vite\" \"npx @ender_romantice/vue-grab-opencode\""
+    }
+}
+```
+
+### CDN Installation (No AI Integration)
+If you don't need AI integration, you can also use CDN:
+
+```html
+<script src="https://unpkg.com/@ender_romantice/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
+```
+> **Limitation**: CDN installation does not support AI integration, only provides basic grabbing and copying functionality.
 
 ## 📚 Detailed Documentation
 
@@ -73,7 +141,10 @@ init({
 - **Style isolation**: Overlay uses Shadow DOM to avoid interfering with page styles
 - **Component tracking**: Automatically parses and displays Vue component hierarchy
 - **Configurable**: Customize highlight color, label text, element filtering, and more
-- **AI Integration**: Supports Opencode for AI-powered code editing
+- **AI Integration**: Supports Opencode for AI-powered code editing with modular provider system
+- **State management**: Built-in state manager for handling multiple concurrent AI sessions
+- **Session handling**: Supports timeouts, aborting, and undo operations for AI interactions
+- **Modular architecture**: Clean separation of concerns with dedicated modules for DOM, overlay, hotkeys, agents, and rendering
 
 ### Full Configuration
 
@@ -101,9 +172,10 @@ init({
   // AI Integration (Optional)
   agent: {
     type: "opencode",
-    provider: "deepseek",     // Service provider ID
-    model: "deepseek/deepseek-reasoner", // Model name
-    apiKey: "your-api-key"    // Your API key
+    // Optional: specify a model
+    // model: "provider/model-name",
+    // Optional: custom endpoint (default: http://localhost:6569/api/code-edit)
+    // endpoint: "http://localhost:3000/api/code-edit"
   },
   
   // Custom Handler (Optional)
@@ -124,31 +196,30 @@ init({
 - `filter.ignoreSelectors`: string[] - CSS selectors to ignore
 - `filter.ignoreTags`: string[] - Tag names to ignore (e.g. `['svg', 'canvas']`)
 - `filter.skipCommonComponents`: boolean - If true, skip common layout elements: `header`, `nav`, `footer`, `aside`
-- `agent.type`: string - AI agent type (currently only "opencode" supported)
-- `agent.provider`: string - Service provider ID (e.g., "deepseek", "anthropic")
-- `agent.model`: string - Model name
-- `agent.apiKey`: string - Your API key for the AI service
+- `agent.type`: string - AI agent type (currently supports "opencode")
+- `agent.model`: string - Optional model identifier (e.g., "provider/model-name")
+- `agent.endpoint`: string - Optional custom endpoint URL (default: http://localhost:6569/api/code-edit)
 
 ### AI Integration Setup
 
-To enable AI code editing with Opencode:
+For a complete step-by-step guide, see the [Complete AI Integration Workflow](#-complete-ai-integration-workflow) section above.
 
-1. **Install the backend service**:
-```bash
-pnpm add @ender_romantice/vue-grab-opencode concurrently
-```
+Key points:
+- Opencode must be installed using Bun: `bun install @opencode-ai/sdk`
+- The bridge server runs on port 6569 by default
+- No API key required - uses locally installed Opencode
+- Configure `vue-grab` with `agent: { type: "opencode" }`
 
-2. **Configure your package.json** to run the AI backend alongside your dev server:
-```json
-{
-  "scripts": {
-    "dev": "vite",
-    "dev:ai": "concurrently \"npm run dev\" \"npx @ender_romantice/vue-grab-opencode\""
-  }
-}
-```
+### AI Session Management
 
-3. **Configure the agent** in your `init()` call (see Configuration section above).
+The AI integration includes advanced session management features:
+
+- **Multiple concurrent sessions**: Run multiple AI editing sessions simultaneously
+- **Timeout handling**: Sessions automatically timeout after 30 seconds
+- **Abort support**: Cancel any ongoing session with `Escape` key
+- **Undo capability**: Support for undoing AI changes (requires provider implementation)
+- **Viewport awareness**: Session overlays adjust automatically on scroll/resize
+- **State persistence**: Session state is managed internally and can be accessed via the state manager
 
 ### Copied Content Format
 

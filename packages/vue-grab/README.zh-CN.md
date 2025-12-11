@@ -24,6 +24,16 @@ yarn add @ender_romantice/vue-grab
 
 > **注意**：如果您需要使用 AI 集成功能（Opencode），必须使用 NPM 安装。CDN 方式无法使用 AI 集成功能。
 
+### CDN 方式（无 AI 集成）
+
+如果您不需要 AI 集成功能，也可以使用 CDN：
+
+```html
+<script src="https://unpkg.com/@ender_romantice/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
+```
+
+> **限制**：CDN 方式无法使用 AI 集成功能，仅提供基础的抓取和复制功能。
+
 ### 基本使用
 
 ```javascript
@@ -39,7 +49,7 @@ init()
 - **AI 交互**：按住 `Ctrl+X`（macOS: `⌘+X`），移动鼠标到目标元素上，点击打开提示词输入框进行 AI 编辑（需要配置 AI 集成）
 
 
-### 快速配置（含 AI 集成）
+### 快速配置
 
 ```javascript
 import { init } from '@ender_romantice/vue-grab'
@@ -57,27 +67,26 @@ init({
     skipCommonComponents: true,
   },
   
-  // AI 集成（可选，但推荐使用）
+  // AI 集成
   agent: {
-    type: "opencode",
-    provider: "deepseek",
-    model: "deepseek/deepseek-reasoner",
-    apiKey: "your-api-key" // 替换为您的 API 密钥
+    type: "opencode"
+    model: "provider/model-name",
+    // 可选：endpoint: "http://localhost:3000/api/code-edit"
   }
 })
 ```
 
-### CDN 方式（无 AI 集成）
+让opencode连接器同步启动
 
-如果您不需要 AI 集成功能，也可以使用 CDN：
-
-```html
-<script src="https://unpkg.com/@ender_romantice/vue-grab/dist/index.global.js" crossorigin="anonymous" data-enabled="true"></script>
+```json
+{
+    "scripts":{
+        "dev": "concurrently \"vite\" \"npx @ender_romantice/vue-grab-opencode\""
+    }
+}
 ```
 
-> **限制**：CDN 方式无法使用 AI 集成功能，仅提供基础的抓取和复制功能。
-
-## 📚 详细文档
+## 😎 更多信息
 
 ### 功能特性
 
@@ -113,10 +122,9 @@ init({
   
   // AI 集成（可选）
   agent: {
-    type: "opencode",
-    provider: "deepseek",     // 服务提供商 ID
-    model: "deepseek/deepseek-reasoner", // 模型名称
-    apiKey: "your-api-key"    // 您的 API 密钥
+    type: "opencode"
+    // 可选：model: "provider/model-name",
+    // 可选：endpoint: "http://localhost:3000/api/code-edit"
   },
   
   // 自定义处理器（可选）
@@ -137,31 +145,9 @@ init({
 - `filter.ignoreSelectors`: string[] - 需要忽略的 CSS 选择器
 - `filter.ignoreTags`: string[] - 需要忽略的标签名（如 `['svg', 'canvas']`）
 - `filter.skipCommonComponents`: boolean - 是否跳过常见布局元素：`header`、`nav`、`footer`、`aside`
-- `agent.type`: string - AI 代理类型（目前仅支持 "opencode"）
-- `agent.provider`: string - 服务提供商 ID（例如 "deepseek"、"anthropic"）
-- `agent.model`: string - 模型名称
-- `agent.apiKey`: string - 您的 AI 服务 API 密钥
-
-### AI 集成设置
-
-要启用 Opencode AI 代码编辑功能：
-
-1. **安装后端服务**：
-```bash
-pnpm add @ender_romantice/vue-grab-opencode concurrently
-```
-
-2. **配置 package.json**，在启动开发服务器时同时运行 AI 后端服务：
-```json
-{
-  "scripts": {
-    "dev": "vite",
-    "dev:ai": "concurrently \"npm run dev\" \"npx @ender_romantice/vue-grab-opencode\""
-  }
-}
-```
-
-3. **在 `init()` 中配置代理**（参见上方的配置部分）。
+- `agent.type`: string - AI 代理类型（支持 "opencode"）
+- `agent.model`: string - 可选模型标识符（例如 "provider/model-name"）
+- `agent.endpoint`: string - 可选自定义端点 URL
 
 ### 复制内容格式
 

@@ -1,4 +1,4 @@
-type Hotkey = KeyboardEvent["key"];
+type Hotkey = KeyboardEvent['key'];
 interface Options {
     adapter?: {
         open: (text: string) => void;
@@ -7,7 +7,7 @@ interface Options {
     hotkey?: Hotkey | Hotkey[];
     keyHoldDuration?: number;
     agent?: {
-        type: "claude" | "opencode";
+        type: 'claude' | 'opencode';
         endpoint?: string;
         provider?: string;
         model?: string;

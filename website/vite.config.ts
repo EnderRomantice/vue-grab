@@ -7,14 +7,14 @@ import path from 'node:path'
 export default defineConfig({
   plugins: [vue(), UnoCSS()],
   resolve: {
-    alias: {
+    alias: process.env.USE_LOCAL_VUE_GRAB !== 'false' ? {
       '@ender_romantice/vue-grab': path.resolve(__dirname, '../packages/vue-grab/dist/index.js'),
-    },
+    } : {},
   },
   server: {
     proxy: {
       '/api/code-edit': {
-        target: 'http://localhost:6567',
+        target: 'http://localhost:6568',
         changeOrigin: true,
         secure: false,
       },

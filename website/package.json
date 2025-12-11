@@ -4,26 +4,36 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently --kill-others \"npm run dev:vite\" \"npm run dev:opencode\"",
+    "dev": "concurrently \"npm run dev:vite\" \"npm run dev:opencode\"",
     "dev:vite": "vite",
     "dev:ai": "npm run dev:opencode",
-    "dev:opencode": "echo 'AI backend not installed. Install with: npm install -g @ender_romantice/vue-grab-opencode'",
+    "dev:opencode": "node ../packages/vue-grab-opencode/dist/cli.js",
+    "dev:local": "cross-env USE_LOCAL_VUE_GRAB=true concurrently \"vite\" \"node ../packages/vue-grab-opencode/dist/cli.js\"",
     "dev:frontend": "vite",
-    "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "build": "cross-env USE_LOCAL_VUE_GRAB=false vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run"
   },
   "dependencies": {
-    "@ender_romantice/vue-grab": "1.4.0",
+    "@ender_romantice/vue-grab": "1.4.1",
     "unocss": "^66.5.4",
     "vue": "^3.5.22"
   },
   "devDependencies": {
-    "@types/node": "^24.6.0",
+    "@types/node": "^24.10.2",
     "@vitejs/plugin-vue": "^6.0.1",
+    "@vitest/ui": "^4.0.15",
+    "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.8.1",
     "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "happy-dom": "^20.0.11",
+    "jsdom": "^27.3.0",
     "typescript": "~5.9.3",
     "vite": "^7.1.7",
+    "vitest": "^4.0.15",
     "vue-tsc": "^3.1.0"
   }
 }
