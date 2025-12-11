@@ -17,7 +17,7 @@ export default defineConfig({
   ],
   theme: {
     colors: {
-      vueGreen: '#42b883',
+      vueGreen: '#00ff00',
       vueNavy: '#35495e',
       vueBlack: '#0f1217',
       vueWhite: '#f8fafc',

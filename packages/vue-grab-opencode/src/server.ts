@@ -1,4 +1,5 @@
 import net from "node:net";
+import { exec } from "node:child_process";
 import { createOpencode } from "@opencode-ai/sdk";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -6,6 +7,8 @@ import { streamSSE } from "hono/streaming";
 import { serve } from "@hono/node-server";
 import pc from "picocolors";
 import { DEFAULT_PORT } from "./constants.js";
+
+const OPENCODE_PORT = 4096;
 
 const VERSION = process.env.VERSION ?? "0.0.0";
 
@@ -41,7 +44,7 @@ const getOpencodeClient = async () => {
   if (!opencodeInstance) {
     const instance = await createOpencode({
       hostname: "127.0.0.1",
-      port: 4096,
+      port: OPENCODE_PORT,
     });
     opencodeInstance = instance;
   }
@@ -242,9 +245,91 @@ const isPortInUse = (port: number): Promise<boolean> =>
     netServer.listen(port);
   });
 
+const killProcessOnPort = async (port: number): Promise<boolean> => {
+  const isWindows = process.platform === "win32";
+  
+  try {
+    if (isWindows) {
+      const { stdout } = await new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+        exec(`netstat -ano | findstr :${port}`, (error, stdout, stderr) => {
+          if (error && !stdout) reject(error);
+          else resolve({ stdout, stderr });
+        });
+      });
+      
+      const lines = stdout.trim().split("\n");
+      const pids = new Set<string>();
+      for (const line of lines) {
+        const match = line.trim().match(/:(\d+)\s+.*LISTENING\s+(\d+)/);
+        if (match) {
+          pids.add(match[2]);
+        }
+      }
+      
+      for (const pid of pids) {
+        await new Promise<void>((resolve, reject) => {
+          exec(`taskkill /PID ${pid} /F`, (error) => {
+            if (error) reject(error);
+            else resolve();
+          });
+        });
+      }
+      return pids.size > 0;
+    } else {
+      const { stdout } = await new Promise<{ stdout: string; stderr: string }>((resolve, reject) => {
+        exec(`lsof -ti:${port}`, (error, stdout, stderr) => {
+          if (error && !stdout) reject(error);
+          else resolve({ stdout, stderr });
+        });
+      });
+      
+      const pids = stdout.trim().split("\n").filter(pid => pid.trim());
+      for (const pid of pids) {
+        await new Promise<void>((resolve, reject) => {
+          exec(`kill -9 ${pid}`, (error) => {
+            if (error) reject(error);
+            else resolve();
+          });
+        });
+      }
+      return pids.length > 0;
+    }
+  } catch (error) {
+    console.error(`Failed to kill process on port ${port}:`, error);
+  }
+  return false;
+};
+
 export const startServer = async (port: number = DEFAULT_PORT) => {
   if (await isPortInUse(port)) {
-    return;
+    console.log(`${pc.yellow(`Port ${port} is in use`)} ${pc.dim('(attempting to kill process)')}`);
+    
+    const killed = await killProcessOnPort(port);
+    
+    if (killed) {
+      console.log(`${pc.green(`Successfully killed process on port ${port}`)}`);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } else {
+      console.log(`${pc.yellow(`No process killed or unable to kill process on port ${port}`)}`);
+    }
+    
+    if (await isPortInUse(port)) {
+      console.error(`${pc.red(`Port ${port} is still in use after cleanup attempt`)}`);
+      console.error(`${pc.dim('Please free the port manually and try again.')}`);
+      return;
+    }
+  }
+
+  // Check Opencode port
+  if (await isPortInUse(OPENCODE_PORT)) {
+    console.log(`${pc.yellow(`Opencode port ${OPENCODE_PORT} is in use`)} ${pc.dim('(attempting to kill process)')}`);
+    const killed = await killProcessOnPort(OPENCODE_PORT);
+    if (killed) {
+      console.log(`${pc.green(`Successfully killed process on port ${OPENCODE_PORT}`)}`);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } else {
+      console.log(`${pc.yellow(`No process killed or unable to kill process on port ${OPENCODE_PORT}`)}`);
+    }
   }
 
   const honoApplication = createServer();

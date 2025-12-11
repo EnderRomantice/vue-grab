@@ -4003,13 +4003,14 @@ var import_picocolors = __toESM(require_picocolors());
 var DEFAULT_PORT = 6569;
 
 // src/server.ts
-var VERSION = "0.0.2";
+var OPENCODE_PORT = 4096;
+var VERSION = "0.1.0";
 var opencodeInstance = null;
 var getOpencodeClient = async () => {
   if (!opencodeInstance) {
     const instance = await createOpencode({
       hostname: "127.0.0.1",
-      port: 4096
+      port: OPENCODE_PORT
     });
     opencodeInstance = instance;
   }
@@ -4169,9 +4170,81 @@ var isPortInUse = (port2) => new Promise((resolve) => {
   });
   netServer.listen(port2);
 });
+var killProcessOnPort = async (port2) => {
+  const isWindows = process.platform === "win32";
+  try {
+    if (isWindows) {
+      const { stdout } = await new Promise((resolve, reject) => {
+        child_process.exec(`netstat -ano | findstr :${port2}`, (error, stdout2, stderr) => {
+          if (error && !stdout2) reject(error);
+          else resolve({ stdout: stdout2, stderr });
+        });
+      });
+      const lines = stdout.trim().split("\n");
+      const pids = /* @__PURE__ */ new Set();
+      for (const line of lines) {
+        const match2 = line.trim().match(/:(\d+)\s+.*LISTENING\s+(\d+)/);
+        if (match2) {
+          pids.add(match2[2]);
+        }
+      }
+      for (const pid of pids) {
+        await new Promise((resolve, reject) => {
+          child_process.exec(`taskkill /PID ${pid} /F`, (error) => {
+            if (error) reject(error);
+            else resolve();
+          });
+        });
+      }
+      return pids.size > 0;
+    } else {
+      const { stdout } = await new Promise((resolve, reject) => {
+        child_process.exec(`lsof -ti:${port2}`, (error, stdout2, stderr) => {
+          if (error && !stdout2) reject(error);
+          else resolve({ stdout: stdout2, stderr });
+        });
+      });
+      const pids = stdout.trim().split("\n").filter((pid) => pid.trim());
+      for (const pid of pids) {
+        await new Promise((resolve, reject) => {
+          child_process.exec(`kill -9 ${pid}`, (error) => {
+            if (error) reject(error);
+            else resolve();
+          });
+        });
+      }
+      return pids.length > 0;
+    }
+  } catch (error) {
+    console.error(`Failed to kill process on port ${port2}:`, error);
+  }
+  return false;
+};
 var startServer = async (port2 = DEFAULT_PORT) => {
   if (await isPortInUse(port2)) {
-    return;
+    console.log(`${import_picocolors.default.yellow(`Port ${port2} is in use`)} ${import_picocolors.default.dim("(attempting to kill process)")}`);
+    const killed = await killProcessOnPort(port2);
+    if (killed) {
+      console.log(`${import_picocolors.default.green(`Successfully killed process on port ${port2}`)}`);
+      await new Promise((resolve) => setTimeout(resolve, 1e3));
+    } else {
+      console.log(`${import_picocolors.default.yellow(`No process killed or unable to kill process on port ${port2}`)}`);
+    }
+    if (await isPortInUse(port2)) {
+      console.error(`${import_picocolors.default.red(`Port ${port2} is still in use after cleanup attempt`)}`);
+      console.error(`${import_picocolors.default.dim("Please free the port manually and try again.")}`);
+      return;
+    }
+  }
+  if (await isPortInUse(OPENCODE_PORT)) {
+    console.log(`${import_picocolors.default.yellow(`Opencode port ${OPENCODE_PORT} is in use`)} ${import_picocolors.default.dim("(attempting to kill process)")}`);
+    const killed = await killProcessOnPort(OPENCODE_PORT);
+    if (killed) {
+      console.log(`${import_picocolors.default.green(`Successfully killed process on port ${OPENCODE_PORT}`)}`);
+      await new Promise((resolve) => setTimeout(resolve, 1e3));
+    } else {
+      console.log(`${import_picocolors.default.yellow(`No process killed or unable to kill process on port ${OPENCODE_PORT}`)}`);
+    }
   }
   const honoApplication = createServer();
   serve({ fetch: honoApplication.fetch, port: port2 });
