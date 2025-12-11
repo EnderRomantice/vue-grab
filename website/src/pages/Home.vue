@@ -24,11 +24,11 @@ onMounted(() => {
         <img src="../assets/vue-grab.svg" alt="Vue Grab" class="w-48 h-48 mx-auto pixel-icon" />
         <div class="absolute inset-0 pixel-crack-bg opacity-30"></div>
       </div>
-      <h1 class="pixel-font text-5xl md:text-6xl tracking-widest text-vueRed glitch-text" data-text="VUE-GRAB">VUE-GRAB</h1>
+      <h1 class="pixel-font text-5xl md:text-6xl tracking-widest text-vueBlue glitch-text" data-text="VUE-GRAB">VUE-GRAB</h1>
       <p class="text-xl md:text-2xl text-vueGreen pixel-font">
         Vue component inspector with <span class="text-vueRed">AI-powered</span> editing
       </p>
-      <p class="text-xl text-vueGreen max-w-2xl mx-auto">
+      <p class="text-xl text-white max-w-2xl mx-auto">
         Inspect, copy, and edit Vue components directly in the browser with keyboard shortcuts and AI assistance.
       </p>
       <div class="flex justify-center gap-6 pt-4">

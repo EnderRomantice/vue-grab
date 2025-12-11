@@ -47,7 +47,7 @@ onMounted(() => {
                     class="w-16 h-16 pixel-icon"
                 />
                 <span class="pixel-font text-4xl tracking-widest text-vueGreen glitch-text"
-                    >blue</span
+                    >VUE-GRAB</span
                 >
             </div>
             <a
