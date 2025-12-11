@@ -6,7 +6,7 @@
 
 一个 Vue 3 工具库，让你可以轻松抓取页面上的任何元素，并将其 HTML 片段和 Vue 组件栈信息复制到剪贴板，方便在 AI 工具中使用。
 
-<video src="./public/vue-grab-ai.mp4" controls autoplay muted loop></video>
+[<video src="./public/vue-grab-ai.mp4" controls autoplay muted loop></video>](https://github.com/user-attachments/assets/af677007-2f7e-46f4-9fb5-a9890334f82e)
 
 ## 🚀 快速开始
 
