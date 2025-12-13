@@ -63,7 +63,7 @@ npm run dev:ai
 2. Hover over any element in your Vue app
 3. Click to open the AI prompt input
 4. Enter your editing request (e.g., "Make this button blue")
-5. Watch as Opencode generates the code changes
+5. Watch as opencode generates the code changes
 
 ### Alternative: CDN Installation (No AI)
 If you don't need AI features, use the CDN version:
