@@ -39,7 +39,10 @@
   },
   "devDependencies": {
     "@types/node": "^24.9.2",
+    "@vue/compiler-sfc": "^3.5.30",
+    "magic-string": "^0.30.21",
     "tsup": "^8.5.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^8.0.0"
   }
 }

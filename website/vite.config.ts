@@ -2,14 +2,19 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import path from 'node:path'
+import { vueGrabPlugin } from '../packages/vue-grab/dist/vite.js'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue(), UnoCSS()],
+  plugins: [
+    vueGrabPlugin(),
+    vue(), 
+    UnoCSS()
+  ],
   resolve: {
-    alias: process.env.USE_LOCAL_VUE_GRAB !== 'false' ? {
+    alias: {
       '@ender_romantice/vue-grab': path.resolve(__dirname, '../packages/vue-grab/dist/index.js'),
-    } : {},
+    },
   },
   server: {
     proxy: {

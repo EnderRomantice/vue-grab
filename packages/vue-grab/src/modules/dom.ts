@@ -43,6 +43,19 @@ export const getLocatorData = (el: Element) => {
   const cssPath = getCSSPath(el);
   const text = (el.textContent || "").trim().replace(/\s+/g, " ");
   const textSnippet = text.length > 160 ? text.slice(0, 160) + "..." : text;
+
+  // Extract source location from Vite plugin injected attribute
+  const vGrab = el.getAttribute('data-v-grab');
+  let sourceLocation = undefined;
+  if (vGrab) {
+    const [file, line, column] = vGrab.split(':');
+    sourceLocation = {
+      file,
+      line: parseInt(line, 10),
+      column: parseInt(column, 10)
+    };
+  }
+
   return {
     tag,
     id,
@@ -50,6 +63,7 @@ export const getLocatorData = (el: Element) => {
     cssPath,
     textSnippet,
     vue,
+    sourceLocation
   } as const;
 };
 

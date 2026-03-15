@@ -570,13 +570,24 @@ Files: ${files.join(" > ")}` : "";
     const cssPath = getCSSPath(el);
     const text = (el.textContent || "").trim().replace(/\s+/g, " ");
     const textSnippet = text.length > 160 ? text.slice(0, 160) + "..." : text;
+    const vGrab = el.getAttribute("data-v-grab");
+    let sourceLocation = void 0;
+    if (vGrab) {
+      const [file, line, column] = vGrab.split(":");
+      sourceLocation = {
+        file,
+        line: parseInt(line, 10),
+        column: parseInt(column, 10)
+      };
+    }
     return {
       tag,
       id,
       classList: clsList,
       cssPath,
       textSnippet,
-      vue
+      vue,
+      sourceLocation
     };
   };
   var getElementAtMouse = (x, y) => {
@@ -699,8 +710,9 @@ Path: ${getCSSPath(el)}`);
 
   // src/state.ts
   var StateManager = class {
+    state;
+    listeners = /* @__PURE__ */ new Set();
     constructor() {
-      this.listeners = /* @__PURE__ */ new Set();
       this.state = {
         mouseX: -1e3,
         mouseY: -1e3,
@@ -774,10 +786,9 @@ Path: ${getCSSPath(el)}`);
 
   // src/modules/agent-manager.ts
   var AgentManager = class {
-    constructor() {
-      this.abortControllers = /* @__PURE__ */ new Map();
-      this.sessionElements = /* @__PURE__ */ new Map();
-    }
+    provider;
+    abortControllers = /* @__PURE__ */ new Map();
+    sessionElements = /* @__PURE__ */ new Map();
     setProvider(provider) {
       this.provider = provider;
     }
@@ -942,12 +953,8 @@ Path: ${getCSSPath(el)}`);
   var agentManager = new AgentManager();
 
   // src/modules/provider.ts
-  var AGENT_ENDPOINTS = {
-    claude: "http://127.0.0.1:3000/api/code-edit",
-    opencode: "http://127.0.0.1:6569/api/code-edit"
-  };
   function createProvider(options) {
-    const endpoint = options.endpoint || AGENT_ENDPOINTS[options.type];
+    const { endpoint } = options;
     return {
       async *send(context, signal) {
         const { prompt, options: ctxOptions } = context;
@@ -961,9 +968,9 @@ Path: ${getCSSPath(el)}`);
             locator,
             htmlSnippet,
             agentConfig: {
-              ...options.provider && { provider: options.provider },
-              ...options.model && { model: options.model },
-              ...options.apiKey && { apiKey: options.apiKey }
+              ...options,
+              // Remove endpoint from nested config to avoid recursion/clutter
+              endpoint: void 0
             }
           }),
           signal
@@ -1089,17 +1096,10 @@ Path: ${getCSSPath(el)}`);
       document.head.appendChild(style);
     }
     const resolved = {
+      ...options,
       hotkey: options.hotkey ?? getDefaultHotkey(),
-      adapter: options.adapter,
       enabled: options.enabled ?? true,
-      keyHoldDuration: options.keyHoldDuration ?? 500,
-      agent: options.agent ? {
-        type: options.agent.type,
-        endpoint: options.agent.endpoint,
-        provider: options.agent.provider,
-        model: options.agent.model,
-        apiKey: options.agent.apiKey
-      } : void 0
+      keyHoldDuration: options.keyHoldDuration ?? 500
     };
     updateConfig({
       highlight: {
@@ -1119,7 +1119,16 @@ Path: ${getCSSPath(el)}`);
     } catch {
     }
     if (resolved.agent) {
-      const provider = createProvider(resolved.agent);
+      let provider;
+      if ("send" in resolved.agent && typeof resolved.agent.send === "function") {
+        provider = resolved.agent;
+      } else {
+        const agentConfig = resolved.agent;
+        if (!agentConfig.endpoint) {
+          console.warn("Vue Grab: Agent endpoint is required when using object configuration.");
+        }
+        provider = createProvider(agentConfig);
+      }
       agentManager.setProvider(provider);
     }
     let mouseX = -1e3;
@@ -1160,7 +1169,6 @@ Path: ${getCSSPath(el)}`);
         rafPending = true;
         rafId = requestAnimationFrame(() => {
           rafPending = false;
-          stateManager.getState();
           const el = getElementAtMouse(mouseX, mouseY);
           hovered = el;
           if (el && isCurrentlyActive) {
@@ -1241,7 +1249,6 @@ ${htmlSnippet}
       pressedKeys.add(k);
       lastKeyDownTimestamps.set(k, Date.now());
       updateActiveState();
-      stateManager.getState();
       if (hovered && isCurrentlyActive) {
         const locator = getLocatorData(hovered);
         const names = (locator.vue ?? []).map((c) => c?.name || "Anonymous");
@@ -1289,7 +1296,6 @@ ${htmlSnippet}
       window.removeEventListener("blur", onBlur);
       if (rafId) cancelAnimationFrame(rafId);
       agentManager.abortAllSessions();
-      stopRenderLoop();
       hideOverlay();
     };
     activeCleanup = cleanup;

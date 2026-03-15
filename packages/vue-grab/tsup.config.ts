@@ -28,10 +28,13 @@ export default defineConfig([
   },
   {
     ...DEFAULT_OPTIONS,
-    entry: ["./src/index.ts"],
+    entry: {
+      index: "./src/index.ts",
+      vite: "./src/vite.ts"
+    },
     format: ["cjs", "esm"],
-    // Enable type declaration generation for TS consumers
     dts: true,
     outDir: "./dist",
+    platform: "node" // Vite plugin needs Node platform
   },
 ]);

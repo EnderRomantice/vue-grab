@@ -12,7 +12,7 @@ import {
 import { stateManager } from './state'
 import { agentManager } from './modules/agent-manager'
 import { createProvider } from './modules/provider'
-import { startRenderLoop, stopRenderLoop } from './modules/renderer'
+import { startRenderLoop } from './modules/renderer'
 import type { Options, AgentProvider } from './types'
 
 export * from './types'
