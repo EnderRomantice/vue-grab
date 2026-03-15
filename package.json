@@ -1,0 +1,24 @@
+{
+  "name": "vue-grab-monorepo",
+  "private": true,
+  "description": "Vue implementation of react-grab with full ecosystem support.",
+  "author": "EnderRomantice",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*",
+    "website"
+  ],
+  "scripts": {
+    "dev:website": "npm run dev -w website",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "type-check": "npm run type-check --workspaces",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "tsup": "^8.5.0",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3"
+  }
+}

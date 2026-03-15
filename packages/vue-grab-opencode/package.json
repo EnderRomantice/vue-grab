@@ -2,6 +2,13 @@
   "name": "@ender_romantice/vue-grab-opencode",
   "version": "0.1.1",
   "type": "module",
+  "author": "EnderRomantice",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EnderRomantice/vue-grab.git",
+    "directory": "packages/vue-grab-opencode"
+  },
   "bin": {
     "vue-grab-opencode": "./dist/cli.js"
   },
@@ -10,21 +17,20 @@
       "types": "./dist/server.d.ts",
       "import": "./dist/server.js",
       "require": "./dist/server.cjs"
-    },
-    "./dist/*": "./dist/*.js",
-    "./dist/*.js": "./dist/*.js"
+    }
   },
   "files": [
     "dist"
   ],
   "scripts": {
     "dev": "tsup --watch",
-    "build": "tsup"
+    "build": "tsup",
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
-    "tsup": "^8.4.0",
-    "typescript": "^5.7.2"
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.6",

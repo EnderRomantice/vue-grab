@@ -1,37 +1,30 @@
 {
   "name": "website",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:opencode\"",
     "dev:vite": "vite",
-    "dev:ai": "npm run dev:opencode",
     "dev:opencode": "node ../packages/vue-grab-opencode/dist/cli.js",
-    "dev:local": "cross-env USE_LOCAL_VUE_GRAB=true concurrently \"vite\" \"node ../packages/vue-grab-opencode/dist/cli.js\"",
-    "dev:frontend": "vite",
-    "build": "cross-env USE_LOCAL_VUE_GRAB=false vue-tsc -b && vite build",
-    "preview": "vite preview",
+    "build": "vue-tsc -b && vite build",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "type-check": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@ender_romantice/vue-grab": "1.4.1",
+    "@ender_romantice/vue-grab": "*",
     "unocss": "^66.5.4",
     "vue": "^3.5.22"
   },
   "devDependencies": {
-    "@types/node": "^24.10.2",
+    "@types/node": "^22.10.2",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vitest/ui": "^4.0.15",
     "@vue/test-utils": "^2.4.6",
     "@vue/tsconfig": "^0.8.1",
-    "concurrently": "^8.2.2",
-    "cross-env": "^7.0.3",
-    "happy-dom": "^20.0.11",
-    "jsdom": "^27.3.0",
-    "typescript": "~5.9.3",
+    "typescript": "^5.9.3",
     "vite": "^7.1.7",
     "vitest": "^4.0.15",
     "vue-tsc": "^3.1.0"
