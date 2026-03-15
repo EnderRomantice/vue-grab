@@ -5,12 +5,13 @@ export interface Options {
   enabled?: boolean;
   hotkey?: Hotkey | Hotkey[];
   keyHoldDuration?: number;
-  agent?: {
-    type: "claude" | "opencode";
+  agent?: AgentProvider | {
+    type: string;
     endpoint?: string;
     provider?: string;
     model?: string;
     apiKey?: string;
+    [key: string]: any;
   };
   highlightColor?: string;
   labelTextColor?: string;

@@ -12,32 +12,10 @@ import {
 import { stateManager } from './state'
 import { agentManager } from './modules/agent-manager'
 import { createProvider } from './modules/provider'
-import { startRenderLoop, stopRenderLoop, updateHover } from './modules/renderer'
+import { startRenderLoop, stopRenderLoop } from './modules/renderer'
+import type { Options, AgentProvider } from './types'
 
-export type Hotkey = KeyboardEvent['key']
-
-export interface Options {
-  adapter?: { open: (text: string) => void }
-  enabled?: boolean
-  hotkey?: Hotkey | Hotkey[]
-  keyHoldDuration?: number
-  agent?: {
-    type: 'claude' | 'opencode'
-    endpoint?: string
-    provider?: string
-    model?: string
-    apiKey?: string
-  }
-  highlightColor?: string
-  labelTextColor?: string
-  showTagHint?: boolean
-  includeLocatorTag?: boolean
-  filter?: {
-    ignoreSelectors?: string[]
-    ignoreTags?: string[]
-    skipCommonComponents?: boolean
-  }
-}
+export * from './types'
 
 let activeCleanup: (() => void) | null = null
 
@@ -59,21 +37,12 @@ export const init = (options: Options = {}) => {
     document.head.appendChild(style)
   }
   
-  const resolved = {
+  const resolved: Options = {
+    ...options,
     hotkey: options.hotkey ?? getDefaultHotkey(),
-    adapter: options.adapter,
     enabled: options.enabled ?? true,
     keyHoldDuration: options.keyHoldDuration ?? 500,
-    agent: options.agent ? {
-        type: options.agent.type,
-        endpoint: options.agent.endpoint,
-        provider: options.agent.provider,
-        model: options.agent.model,
-        apiKey: options.agent.apiKey
-    } : undefined,
-  } satisfies Options
-
-  let activeInputSessionId: string | null = null
+  }
 
   // Apply runtime UI/behavior configuration
   updateConfig({
@@ -97,7 +66,20 @@ export const init = (options: Options = {}) => {
 
   // Setup agent provider if configured
   if (resolved.agent) {
-    const provider = createProvider(resolved.agent)
+    let provider: AgentProvider<any>
+    
+    if ('send' in resolved.agent && typeof resolved.agent.send === 'function') {
+      // User provided a full AgentProvider implementation
+      provider = resolved.agent as AgentProvider<any>
+    } else {
+      // User provided a configuration object
+      const agentConfig = resolved.agent as any
+      if (!agentConfig.endpoint) {
+        console.warn('Vue Grab: Agent endpoint is required when using object configuration.')
+      }
+      provider = createProvider(agentConfig)
+    }
+    
     agentManager.setProvider(provider)
   }
 
@@ -117,7 +99,7 @@ export const init = (options: Options = {}) => {
 
   const updateActiveState = () => {
     const wasActive = isCurrentlyActive
-    isCurrentlyActive = isComboPressed(resolved.hotkey!, resolved.keyHoldDuration) || isCtrlXPressed()
+    isCurrentlyActive = isComboPressed(resolved.hotkey!, resolved.keyHoldDuration!) || isCtrlXPressed()
     
     // If becoming inactive and no sessions, hide overlay
     if (wasActive && !isCurrentlyActive) {
@@ -150,7 +132,6 @@ export const init = (options: Options = {}) => {
       rafPending = true
        rafId = requestAnimationFrame(() => {
         rafPending = false
-        const state = stateManager.getState()
         const el = getElementAtMouse(mouseX, mouseY)
         hovered = el
         
@@ -210,7 +191,7 @@ export const init = (options: Options = {}) => {
       return
     }
 
-    if (!isComboPressed(resolved.hotkey!, resolved.keyHoldDuration)) return
+    if (!isComboPressed(resolved.hotkey!, resolved.keyHoldDuration!)) return
     e.stopPropagation()
     e.preventDefault()
     try {
@@ -231,11 +212,10 @@ export const init = (options: Options = {}) => {
 
   const onKeyDown = (e: KeyboardEvent) => {
     const k = normalizeKey(e.key)
-    pressedKeys.add(k as Hotkey)
+    pressedKeys.add(k as any)
     lastKeyDownTimestamps.set(k, Date.now())
     
     updateActiveState()
-    const state = stateManager.getState()
 
     if (hovered && isCurrentlyActive) {
       const locator = getLocatorData(hovered)
@@ -253,7 +233,7 @@ export const init = (options: Options = {}) => {
   }
 
   const onKeyUp = (e: KeyboardEvent) => {
-    pressedKeys.delete(normalizeKey(e.key) as Hotkey)
+    pressedKeys.delete(normalizeKey(e.key) as any)
     updateActiveState()
     if (!isCurrentlyActive) hideOverlay() // Hide hover overlay when no hotkey is pressed
   }
@@ -292,7 +272,6 @@ export const init = (options: Options = {}) => {
     if (rafId) cancelAnimationFrame(rafId)
     // Cancel all active sessions
     agentManager.abortAllSessions()
-    stopRenderLoop()
     hideOverlay()
   }
   activeCleanup = cleanup

@@ -1,20 +1,19 @@
 import type { AgentProvider, AgentContext } from '../types'
 
-const AGENT_ENDPOINTS = {
-  claude: 'http://127.0.0.1:3000/api/code-edit',
-  opencode: 'http://127.0.0.1:6569/api/code-edit'
-}
-
 export interface ProviderOptions {
-  type: 'claude' | 'opencode'
-  endpoint?: string
+  type?: string
+  endpoint: string
   provider?: string
   model?: string
   apiKey?: string
+  [key: string]: any
 }
 
+/**
+ * Creates a generic HTTP SSE provider that can talk to any compatible agent server.
+ */
 export function createProvider(options: ProviderOptions): AgentProvider<{ locator: any; htmlSnippet: string }> {
-  const endpoint = options.endpoint || AGENT_ENDPOINTS[options.type]
+  const { endpoint } = options
 
   return {
     async *send(context: AgentContext<{ locator: any; htmlSnippet: string }>, signal: AbortSignal) {
@@ -30,9 +29,9 @@ export function createProvider(options: ProviderOptions): AgentProvider<{ locato
           locator,
           htmlSnippet,
           agentConfig: {
-            ...(options.provider && { provider: options.provider }),
-            ...(options.model && { model: options.model }),
-            ...(options.apiKey && { apiKey: options.apiKey })
+            ...options,
+            // Remove endpoint from nested config to avoid recursion/clutter
+            endpoint: undefined 
           }
         }),
         signal
