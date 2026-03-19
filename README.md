@@ -4,7 +4,7 @@
 
 <img src="./public/vue-grab.svg" width="400" height="400" alt="Vue Grab Logo">
 
-A Vue 3 utility library that lets you easily grab any element on the page and copy its HTML snippet and Vue component stack information to the clipboard, making it convenient to use in AI tools.
+A Vue 3 utility library that lets you easily grab any element on the page and copy its HTML snippet and Vue component stack info to the clipboard, making it convenient to use with AI tools.
 
 [<video src="./public/vue-grab-ai.mp4" controls autoplay muted loop></video>](https://github.com/user-attachments/assets/af677007-2f7e-46f4-9fb5-a9890334f82e)
 
